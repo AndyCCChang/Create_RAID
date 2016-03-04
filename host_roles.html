@@ -1,0 +1,565 @@
+<div id="content" style="display:none;" ng-controller="licenseCtrl as licCtrl">
+
+    <div ng-hide="licCtrl.license_installed">
+        <div class="alert alert-danger">
+            <div class="form-group">
+                <label class="control-label" for="license-key-input" data-translate="INPUT_LICENSE_DESC">
+                    Please enter a license key to enable this cluster node:
+                </label>
+                <div class="input-group">
+                    <input class="form-control" ng-model="licCtrl.license_key" type="text" id="license-key-input">
+                    <select ng-model="licCtrl.license_type" class="form-control">
+                        <option value="trial0" data-translate="FIRST_TRIAL">First Trial</option>
+                        <option value="trial1" data-translate="SECOND_TRIAL">Second Trial</option>
+                        <option value="trial2" data-translate="THIRD_TRIAL">Third Trial</option>
+                        <option value="object" data-translate="OBJECT">Object</option>
+                        <option value="nas" data-translate="NAS">NAS</option>
+                        <option value="san" data-translate="SAN">SAN</option>
+                    </select>
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" ng-click="licCtrl.install_license()" data-translate="INSTALL">
+                            Install
+                        </button>
+                    </span>
+                </div>
+             </div>
+        </div>
+
+        <div class="alert alert-success" ng-show="licCtrl.install_success" data-translate="LICENSE_KEY_IS_INSTALLED_SUCCE">
+            License is installed successfully.
+        </div>
+    </div>
+
+    <div ng-show="licCtrl.license_installed">
+        <div class="panel panel-default" id="storage-volume-panel">
+            <div class="panel-heading">
+                <h3 class="panel-title" data-translate="OBJECT_STORAGE_DEVICES">Object Storage Device</h3>
+            </div>
+            <div class="panel-body">
+                <div class="btn-toolbar" role="toolbar">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-gray" data-translate="ADD_STORAGE_VOLUME" id="add-storage-volume" data-toggle="modal" data-target="#dialog-add-storage-volume">Add Storage Volume</button>
+                        <button type="button" class="btn btn-gray" data-translate="DELETE_STORAGE_VOLUME" id="delete-storage-volume">Delete Storage Volume(s)</button>
+                        <button type="button" class="btn btn-gray" data-translate="EDIT_STORAGE_VOLUME" id="edit-storage-volume" data-toggle="modal" data-target="#dialog-edit-storage-volume">Edit Storage Volume(s)</button>
+                        <button type="button" class="btn btn-gray" data-translate="REPAIR_STORAGE_VOLUME" id="repair-storage-volume" data-toggle="modal" data-target="#dialog-repair-storage-volume">Repair Storage Volume(s)</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-gray" data-translate="ENABLE_OSD" id="enable-osd" data-toggle="modal" data-target="#dialog-enable-osd">Enable OSD</button>
+                        <button type="button" class="btn btn-gray" data-translate="DISABLE_OSD" id="disable-osd" data-toggle="modal" data-target="#dialog-disable-osd">Disable OSD</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-gray" data-translate="SETUP_RACKID" id="setup-rackid" data-toggle="modal" data-target="#dialog-setup-rackid">Setup Rack ID</button>
+                    </div>
+                </div>
+            </div>
+            <table id="storage-volume-table" class="table-bordered"></table>
+            <div class="progress role-progress" id="osd-progress">
+                <div class="progress-bar" role="progressbar">
+                </div>
+            </div>
+            <div class="list-group">
+                <div class="list-group-item">
+                    <div class="form-inline" style="line-height:30px;">
+                        <div class="form-group">
+                            <label data-translate="DEFAULT_JOURNAL_COLON" for="default-journal-text" class="control-label">Default Journal Partition:</label>
+                            <span id="default-journal-text" style="vertical-align:middle;margin-left:5px;">&#xA0;</span>
+                        </div>
+                        <div class="form-group pull-right">
+                            <div class="btn-toolbar" role="toolbar">
+                                <button type="button" class="btn btn-gray" data-translate="CHANGE" data-toggle="modal" data-target="#dialog-change-default-journal">Change</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default" id="gateway-panel">
+            <div class="panel-heading">
+                <h3 class="panel-title" data-translate="STORAGE_GATEWAY">Storage Gateway</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-inline" style="line-height:30px;">
+                    <div class="form-group">
+                        <label data-translate="STATUS_COLON" for="gw-status-text" class="control-label">Status:</label>
+                        <span id="gw-status-text" style="vertical-align:middle;margin-left:5px;" data-translate="DISABLED">Disabled</span>
+                    </div>
+                    <div class="form-group pull-right">
+                        <div class="btn-toolbar" role="toolbar">
+                            <button type="button" class="btn btn-gray" data-translate="ENABLE" id="enable-gw" data-toggle="modal" data-target="#dialog-enable-gw">Enable</button>
+                            <button type="button" class="btn btn-gray" data-translate="DISABLE" id="disable-gw">Disable</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="progress role-progress" id="gw-progress">
+                <div class="progress-bar" role="progressbar">
+                </div>
+            </div>
+        </div>
+
+        <div role="alert" class="alert alert-danger" id="gw-reboot">
+            <p data-translate="DISABLE_GW_NEED_REBOOT">
+                Warning! Please reboot this host to finish disabling its gateway role.
+            </p>
+        </div>
+
+        <div class="panel panel-default" id="rrs-panel">
+            <div class="panel-heading">
+                <h3 class="panel-title" data-translate="REMOTE_REPLICATION_SERVER">Remote Replication Server</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-inline" style="line-height:30px;">
+                    <div class="form-group">
+                        <label data-translate="STATUS_COLON" for="rrs-status-text" class="control-label">Status:</label>
+                        <span id="rrs-status-text" style="vertical-align:middle;margin-left:5px;" data-translate="DISABLED">Disabled</span>
+                    </div>
+                    <div class="form-group pull-right">
+                        <div class="btn-toolbar" role="toolbar">
+                            <button type="button" class="btn btn-gray" data-translate="ENABLE" id="enable-rrs" data-toggle="modal" data-target="#dialog-enable-rrs">Enable</button>
+                            <button type="button" class="btn btn-gray" data-translate="DISABLE" id="disable-rrs">Disable</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="progress role-progress" id="rrs-progress">
+                <div class="progress-bar" role="progressbar">
+                </div>
+            </div>
+        </div>
+        <div id="dialog-add-storage-volume" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="ADD_STORAGE_VOLUME">Add Storage Volume</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div role="tabpanel">
+
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li role="presentation" class="active"><a href="#add_sv_tab_disk" aria-controls="add_sv_tab_disk" role="tab" data-toggle="tab" data-translate="DISK/PARTITION">Disk/Partition</a></li>
+                                <li role="presentation"><a href="#add_sv_tab_osd" aria-controls="add_sv_tab_osd" role="tab" data-toggle="tab" data-translate="ADVANCED">Advanced</a></li>
+                            </ul>
+
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="add_sv_tab_disk">
+                                    <div class="form-group">
+                                        <label class="control-label" data-translate="TYPE">Type</label>
+                                        <select id="add-storage-volume-mode" class="form-control">
+                                            <option value="single" data-translate="SINGLE_PARTITION">Single Partition</option>
+                                            <option value="single_batch" data-translate="SINGLE_PARTITION_BATCH">Single Partition (Batch Mode)</option>
+                                            <option value="striped" data-translate="STRIPED">Striped</option>
+                                            <option value="raidz" data-translate="SOFTWARE_RAID">Software Raid</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" data-translate="NAME">Name</label>
+                                        <input type="text" id="add-storage-volume-name" class="form-control">
+                                        <p class="help-block" data-translate="HELP_ADD_STORAGE_VOLUME_NAME">In batch mode, the name will be appeneded with &quot;-$i&quot; if more than one disks are selected.</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" data-translate="DATA_DISK">Data Disk</label>
+                                        <div>
+                                            <select id="add-storage-volume-data-disk" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" data-translate="JOURNAL_DISK">Journal Disk</label>
+                                        <div>
+                                            <select id="add-storage-volume-journal-disk" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="cache-disk-form-group">
+                                        <label class="control-label" data-translate="CACHE_DISK">Cache Disk</label>
+                                        <div>
+                                            <select id="add-storage-volume-cache-disk" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="spare-disk-form-group">
+                                        <label class="control-label" data-translate="SPARE_DISK">Hot Spare Disk(s)</label>
+                                        <div>
+                                            <select id="add-storage-volume-spare-disk" class="form-control" multiple="multiple">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label data-translate="ENABLE_COMPRESS" id="add-storage-volume-compress">
+                                            <input type="checkbox"> Enable Compression
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label data-translate="ENABLE_DEDUP" id="add-storage-volume-dedup">
+                                            <input type="checkbox"> Enable Deduplication
+                                        </label>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="add_sv_tab_osd">
+                                    <div class="form-group">
+                                        <div class="checkbox">
+                                            <label data-translate="ENABLE_OSD_AFTER_CREATION" for="add_sv_tab_osd_enable_osd" class="control-label">
+                                                <input type="checkbox" id="add_sv_tab_osd_enable_osd">
+                                                Enable OSD on this volume after creation
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="add_sv_tab_osd_settings">
+                                        <div class="form-group">
+                                            <label class="control-label" data-translate="PUBLIC_INTERFACE">Public Interface</label>
+                                            <select id="add_sv_tab_osd_public_interface" class="form-control">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" data-translate="CLUSTER_INTERFACE">Cluster Interface</label>
+                                            <select id="add_sv_tab_osd_cluster_interface" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="add-storage-volume-ok" type="button" class="btn btn-primary" data-translate="ADD">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dialog-edit-storage-volume" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="EDIT_STORAGE_VOLUME">Edit Storage Volume</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="control-label" data-translate="TYPE">Type</label>
+                            <input type="text" id="edit-storage-volume-type" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="NAME">Name</label>
+                            <input type="text" id="edit-storage-volume-name" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="DATA_DISK">Data Disk</label>
+                            <input type="text" id="edit-storage-volume-data-disk" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="JOURNAL_DISK">Journal Disk</label>
+                            <input type="text" id="edit-storage-volume-journal-disk" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="CACHE_DISK">Cache Disk</label>
+                            <div>
+                                <select id="edit-storage-volume-cache-disk" class="form-control" size="2">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" id="edit-spare-disk-form-group">
+                            <label class="control-label" data-translate="SPARE_DISK">Hot Spare Disk(s)</label>
+                            <div>
+                                <select id="edit-storage-volume-spare-disk" class="form-control" multiple="multiple">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="edit-storage-volume-ok" type="button" class="btn btn-primary" data-translate="EDIT">Edit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dialog-repair-storage-volume" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="REPAIR_STORAGE_VOLUME">Repair Storage Volume</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p data-translate="DESC_REPAIR_STORAGE_VOLUME">You&apos;ve selected the following online storage volumes. How do you want to repair them?</p>
+                        <ul class="list-group" id="storage-volumes-to-repair"></ul>
+                        <div class="radio">
+                            <label data-translate="DESC_SCAN_STORAGE_VOLUME">
+                                <input type="radio" name="repair-options" id="option-scan" value="scan" checked>Scan the storage volumes and fix them if needed.
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label data-translate="DESC_REFORMAT_STORAGE_VOLUME">
+                                <input type="radio" name="repair-options" id="option-reformat" value="reformat">Reformat the storage volumes.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="repair-storage-volume-ok" type="button" class="btn btn-primary" data-translate="REPAIR">Repair</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dialog-enable-osd" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="ENABLE_OSD">Enable OSD</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p data-translate="DESC_ENABLE_OSD">OSD will be enabled on the following offline storage volumes. Please select proper interfaces and click Done to enable these OSDs.</p>
+                        <ul class="list-group" id="storage-volumes-to-enable"></ul>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="PUBLIC_INTERFACE">Public Interface</label>
+                            <select id="osd-public-interface" class="form-control">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="CLUSTER_INTERFACE">Cluster Interface</label>
+                            <select id="osd-cluster-interface" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="enable-osd-ok" type="button" class="btn btn-primary" data-translate="DONE">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="dialog-disable-osd" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="DISABLE_OSD">Disable OSD</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p data-translate="DESC_DISABLE_OSD">OSD will be disabled on the following online storage volumes. Please click Done if you want to disable these OSDs.</p>
+                        <ul class="list-group" id="storage-volumes-to-disable"></ul>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label data-translate="FORCE_DISABLE_OSD_DESC" for="disable_osd_force" class="control-label">
+                                    <input type="checkbox" id="disable_osd_force">
+                                    Force disable OSD even if doing so will cause data loss.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="disable-osd-ok" type="button" class="btn btn-primary" data-translate="DONE">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="dialog-setup-rackid" class="modal fade"> 
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 data-translate="Setup Rack ID" class="modal-title">Setup Rack ID</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label data-translate="RACK_ID_INPUT" for="rack-id" class="control-label">Rack ID</label>
+                            <input type="text" id="rack-id" class="form-control" />
+                        </div>
+                        <p data-translate="RACK_AWARE_EXPLAIN">Rack-aware replica has been enabled on this cluster. Please enter a rack ID for this node. Note that replica will be distributed among different racks instead of hosts. Please refer to product manual if you are not sure how to setup this rack ID.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button data-translate="DONE" id="rack-id-ok" type="button" class="btn btn-primary">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dialog-enable-gw" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="ENABLE_GW">Enable Storage Gateway</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p data-translate="DESC_ENABLE_GW">Please select proper interfaces and click Done to enable storage gateway on this host.</p>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="PUBLIC_INTERFACE">Public Interface</label>
+                            <select id="gw-public-interface" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="enable-gw-ok" type="button" class="btn btn-primary" data-translate="DONE">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="dialog-enable-rrs" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="ENABLE_RRS">Enable Remote Replication Server</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p data-translate="DESC_ENABLE_RRS">Please select proper interfaces and click Done to enable remote replication server on this host.</p>
+                        <div class="form-group">
+                            <label class="control-label" data-translate="PUBLIC_INTERFACE">Public Interface</label>
+                            <select id="rrs-public-interface" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="enable-rrs-ok" type="button" class="btn btn-primary" data-translate="DONE">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="dialog-change-default-journal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="CHANGE_DEFAULT_JOURNAL">Change Default Journal Partition</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p data-translate="DESC_CHANGE_DEFAULT_JOURNAL">Please select a partition as new default journal partition.</p>
+                        <div class="form-group">
+                            <select id="default-journal-partition" class="form-control" size="2">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="change-default-journal-ok" type="button" class="btn btn-primary" data-translate="DONE">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 data-translate="CURRENT_LICENSE" class="panel-title">
+                    Current License
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div class="row" style="margin-top: 5px;">
+                    <div class="col-md-3">
+                        <b>
+                            Trial License key
+                        </b>
+                    </div>
+                    <div ng-bind="licCtrl.trial_key" class="col-md-9">
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 5px;">
+                    <div class="col-md-3">
+                        <b>
+                            Object License key
+                        </b>
+                    </div>
+                    <div ng-bind="licCtrl.object_key" class="col-md-9">
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 5px;">
+                    <div class="col-md-3">
+                        <b>
+                            NAS License key
+                        </b>
+                    </div>
+                    <div ng-bind="licCtrl.nas_key" class="col-md-9">
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 5px;">
+                    <div class="col-md-3">
+                        <b>
+                            SAN License key
+                        </b>
+                    </div>
+                    <div ng-bind="licCtrl.san_key" class="col-md-9">
+                    </div>
+                </div>
+                <div class="row"  style="margin-top: 5px;">
+                    <div class="col-md-3">
+                        <b data-translate="EXPIRED_DATE">
+                            Expired date
+                        </b>
+                    </div>
+                    <div ng-bind="licCtrl.expired_date" class="col-md-9">
+                    </div>
+                </div >
+                <div class="row"  style="margin-top: 5px;">
+                    <div class="col-md-3">
+                        <b data-translate="FEATURES">
+                            Features
+                        </b>
+                    </div>
+                    <div ng-bind="licCtrl.features" class="col-md-9">
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 5px;">
+                    <div class="col-md-3">
+                        <b data-translate="INSTALL_NEW_LICENSE">
+                            Install New License
+                        </b>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            <input class="form-control" ng-model="licCtrl.license_key" type="text"> 
+                            <span class="form-group">
+                                <select ng-model="licCtrl.license_type" class="form-control">
+                                    <option value="trial0" data-translate="FIRST_TRIAL">First Trial</option>
+                                    <option value="trial1" data-translate="SECOND_TRIAL">Second Trial</option>
+                                    <option value="trial2" data-translate="THIRD_TRIAL">Third Trial</option>
+                                    <option value="object" data-translate="OBJECT">Object</option>
+                                    <option value="nas" data-translate="NAS">NAS</option>
+                                    <option value="san" data-translate="SAN">SAN</option>
+                                </select>
+                                <button class="btn btn-default" ng-click="licCtrl.install_license()" data-translate="INSTALL">
+                                    Install
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div ng-show="licCtrl.installing">
+        <p>
+            <span data-translate="INSTALLING_LICENSE...">Installing license...</span>
+            <img src="images/running.gif">
+        </p>
+    </div>
+
+    <div role="alert" class="alert alert-danger" ng-show="licCtrl.install_error">
+        <p ng-bind="licCtrl.install_error">
+        </p>
+    </div>
+
+</div>
+
+<script>
+    angular.bootstrap(document.getElementById("content"), ['host-license']);
+</script>
