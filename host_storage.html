@@ -13,9 +13,133 @@
     </div>
     <!--Andy -->
     <div class="panel panel-default" id="disk-panel">
-
+        <div class="panel-heading">
+            <h3 class="panel-title" data-translate="CREATE_RAID">Create RAID</h3>
+        </div>
+        <div class="panel-body">
+        </div>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group">
+                <button type="button" class="btn btn-gray" data-translate="CREATE_RAID" id="create-raid" data-toggle="modal" data-target="#dialog-create-raid">Create RAID</button>
+            </div>
+        </div>
+    <!-- Andy modal -->
     </div>
-     <!--Andy end-->
+            <div id="dialog-create-raid" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" data-translate="Create_RAID">Create RAID</h4>
+                    </div>
+                    <div class="modal-body">
+
+                        <div role="tabpanel">
+
+                            <!-- Nav tabs -->
+<!--                            <ul class="nav nav-tabs" role="tablist">
+                                <li role="presentation" class="active"><a href="#add_sv_tab_disk" aria-controls="add_sv_tab_disk" role="tab" data-toggle="tab" data-translate="DISK/PARTITION">Disk/Partition</a></li>
+                                <li role="presentation"><a href="#add_sv_tab_osd" aria-controls="add_sv_tab_osd" role="tab" data-toggle="tab" data-translate="ADVANCED">Advanced</a></li>
+                            </ul>
+-->
+
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+<!-- add_sv_tab_disk needs to be changed -->
+                                <div role="tabpanel" class="tab-pane active" id="add_sv_tab_disk">
+				   <table id="create-raid-table" class="table-bordered"></table>
+ <!--
+                                   <div class="form-group">
+                                        <label class="control-label" data-translate="TYPE">Type</label>
+                                        <select id="add-storage-volume-mode" class="form-control">
+                                            <option value="single" data-translate="SINGLE_PARTITION">Single Partition</option>
+                                            <option value="single_batch" data-translate="SINGLE_PARTITION_BATCH">Single Partition (Batch Mode)</option>
+                                            <option value="striped" data-translate="STRIPED">Striped</option>
+                                            <option value="raidz" data-translate="SOFTWARE_RAID">Software Raid</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" data-translate="NAME">Name</label>
+                                        <input type="text" id="add-storage-volume-name" class="form-control">
+                                        <p class="help-block" data-translate="HELP_ADD_STORAGE_VOLUME_NAME">In batch mode, the name will be appeneded with &quot;-$i&quot; if more than one disks are selected.</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" data-translate="DATA_DISK">Data Disk</label>
+                                        <div>
+                                            <select id="add-storage-volume-data-disk" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" data-translate="JOURNAL_DISK">Journal Disk</label>
+                                        <div>
+                                            <select id="add-storage-volume-journal-disk" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="cache-disk-form-group">
+                                        <label class="control-label" data-translate="CACHE_DISK">Cache Disk</label>
+                                        <div>
+                                            <select id="add-storage-volume-cache-disk" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="spare-disk-form-group">
+                                        <label class="control-label" data-translate="SPARE_DISK">Hot Spare Disk(s)</label>
+                                        <div>
+                                            <select id="add-storage-volume-spare-disk" class="form-control" multiple="multiple">
+                                            </select>
+                                        </div>
+                                    </div>   
+-->
+<!--                                   <div class="checkbox">
+                                        <label data-translate="15_1_RIAD5" id="add-storage-volume-compress">
+                                            <input type="checkbox"> 15 + 1 RAID5
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label data-translate="15_1_RIAD5" id="add-storage-volume-dedup">
+                                            <input type="checkbox"> 15 + 1 RAID5
+                                        </label>
+                                    </div>
+-->
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="add_sv_tab_osd">
+                                    <div class="form-group">
+                                        <div class="checkbox">
+                                            <label data-translate="ENABLE_OSD_AFTER_CREATION" for="add_sv_tab_osd_enable_osd" class="control-label">
+                                                <input type="checkbox" id="add_sv_tab_osd_enable_osd">
+                                                Enable OSD on this volume after creation
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="add_sv_tab_osd_settings">
+                                        <div class="form-group">
+                                            <label class="control-label" data-translate="PUBLIC_INTERFACE">Public Interface</label>
+                                            <select id="add_sv_tab_osd_public_interface" class="form-control">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" data-translate="CLUSTER_INTERFACE">Cluster Interface</label>
+                                            <select id="add_sv_tab_osd_cluster_interface" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button id="add-storage-volume-ok" type="button" class="btn btn-primary" data-translate="ADD">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!--Andy end-->
     <div class="panel panel-default" id="nas-disk-panel">
         <div class="panel-heading">
             <h3 class="panel-title" data-translate="NAS_DISKS">NAS Disks</h3>
