@@ -81,6 +81,8 @@ function refresh_nas_disk_panel(recurrence, is_global) {
 }
 
 function host_storage_refresh_page(initCompleted, recurrence) {
+    //Andy
+    var createRAIDTable = $("#create-raid-table").dataTable();
     var localDiskTable = $("#local-disk-table").dataTable();
     var iscsiDiskTable = $("#iscsi-disk-table").dataTable();
     var iscsiTable = $("#iscsi-session-table").dataTable();
@@ -108,7 +110,8 @@ function host_storage_refresh_page(initCompleted, recurrence) {
                           ajax_disk_status_image(hostIP, null, is_global));
         } else {
             return $.when(ajax_host_local_disk_list(hostIP, null, is_global),
-                          ajax_disk_status_image(hostIP, null, is_global));
+                          ajax_disk_status_image(hostIP, null, is_global)),
+                          ajax_host_create_raid_list(hostIP, null, is_global);
         }
     }).done(function(a, b, c, d){
         if (is_controller) {
@@ -135,6 +138,10 @@ function host_storage_refresh_page(initCompleted, recurrence) {
             if (b[0].response.length) {
                 init_disk_images_table(b[0].response[0], b[0].response[1], b[0].response[2]);
             }
+            if (c[0].response.length) {
+                createRAIDTable.fnAddData(a[0].response);
+            }
+
         }
         if (initCompleted) {
             $("#content").show();
@@ -220,7 +227,47 @@ function init_disk_images_table(rows, cols, slots) {
         }
     }
 }
-
+//Andy
+function init_create_raid_table(){
+    $("#create-raid-table").dataTable({
+	"aoColumns": [
+           {
+               "sTitle": getText("RAID"),
+               "sClass": "raid-config",
+               "mData": "r_config"
+           },
+           {
+                "bSortable": false,
+                "sClass": "raid-check-create center",
+                "sWidth": "5%",
+                "mData": null,
+                "mRender": function(data, type, full) {
+                    return '<input type="checkbox"></input>';
+               }
+           },
+           { 
+                "bSortable": false,
+                "sClass": "raid-check-erase center",
+                "sWidth": "5%",
+                "mData": null,
+                "mRender": function(data, type, full) {
+                    return '<input type="checkbox"></input>';
+               }
+           },
+           {
+               "sTitle": getText("Status"),
+               "sClass": "raid-status",
+               "mData": "r_status"
+	   },
+           {
+               "sTitle": getText("Description"),
+               "sClass": "raid-description",
+               "mData": "r_description"
+	   }
+        ]
+    });
+}
+//Andy end
 function init_local_disk_table() {
     $("#local-disk-table").dataTable({
         "aoColumns": [
@@ -611,6 +658,8 @@ this.init = function(initCompleted) {
     init_iscsi_disk_table();
     init_nas_disk_table();
     init_iscsi_session_table();
+    //Andy
+    init_create_raid_table();
 
     host_storage_refresh_page(initCompleted, true);
 }
