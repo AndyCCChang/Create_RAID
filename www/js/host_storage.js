@@ -81,8 +81,6 @@ function refresh_nas_disk_panel(recurrence, is_global) {
 }
 
 function host_storage_refresh_page(initCompleted, recurrence) {
-    //Andy
-    var createRAIDTable = $("#create-raid-table").dataTable();
     var localDiskTable = $("#local-disk-table").dataTable();
     var iscsiDiskTable = $("#iscsi-disk-table").dataTable();
     var iscsiTable = $("#iscsi-session-table").dataTable();
@@ -222,39 +220,7 @@ function init_disk_images_table(rows, cols, slots) {
         }
     }
 }
-//Andy
-function init_create_raid_table(){
-    $("#create-raid-table").dataTable({
-	"aoColumns": [
-           {
-               "sTitle": getText("RAID"),
-               "sClass": "raid-config",
-               "mData": "r_config"
-           },
-           {
-               "sTitle": getText("Create"),
-               "sClass": "create-checkbox",
-               "mData": "r_create"
-           },
-           {
-               "sTitle": getText("Erase"),
-               "sClass": "erase-checkbox",
-               "mData": "r_erase"
-           },
-           {
-               "sTitle": getText("Status"),
-               "sClass": "raid-status",
-               "mData": "r_status"
-	   },
-           {
-               "sTitle": getText("Description"),
-               "sClass": "raid-description",
-               "mData": "r_description"
-	   }
-        ]
-    });
-}
-//Andy end
+
 function init_local_disk_table() {
     $("#local-disk-table").dataTable({
         "aoColumns": [
@@ -645,8 +611,6 @@ this.init = function(initCompleted) {
     init_iscsi_disk_table();
     init_nas_disk_table();
     init_iscsi_session_table();
-    //Andy
-    init_create_raid_table();
 
     host_storage_refresh_page(initCompleted, true);
 }

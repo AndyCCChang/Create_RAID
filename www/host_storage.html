@@ -1,0 +1,137 @@
+<div id="content" style="display:none;">
+    <div class="panel panel-default" id="disk-array-panel">
+        <div class="panel-heading">
+            <h3 class="panel-title" data-translate="DISK_ARRAY">Physical Disks Status</h3>
+        </div>
+        <table id="disk-images-table" class="table-bordered" border="0" cellpadding="0" cellspacing="0" style="width: 640px"></table>
+    </div>
+    <div class="panel panel-default" id="disk-panel">
+        <div class="panel-heading">
+            <h3 class="panel-title" data-translate="LOCAL_DISKS">Local Disks</h3>
+        </div>
+        <table id="local-disk-table" class="table-bordered"></table>
+    </div>
+    <!--Andy -->
+    <div class="panel panel-default" id="disk-panel">
+
+    </div>
+     <!--Andy end-->
+    <div class="panel panel-default" id="nas-disk-panel">
+        <div class="panel-heading">
+            <h3 class="panel-title" data-translate="NAS_DISKS">NAS Disks</h3>
+        </div>
+        <div class="panel-body">
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-gray" data-toggle="modal" data-target="#dialog-nas-disk-create" id="nas-disk-create" data-translate="CREATE_NAS_DISK">Create NAS Disk</button>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-gray" id="nas-disk-destroy" data-translate="DESTROY_NAS_DISK">Delete NAS Disk</button>
+                </div>
+            </div>
+        </div>
+        <table id="nas-disk-table" class="table-bordered"></table>
+        <div class="progress role-progress" id="nas-disk-progress">
+            <div class="progress-bar" role="progressbar">
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default" id="iscsi-panel">
+        <div class="panel-heading">
+            <h3 class="panel-title" data-translate="ISCSI_SESSIONS">iSCSI Sessions</h3>
+        </div>
+        <div class="panel-body">
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-gray" data-toggle="modal" data-target="#dialog-iscsi-login" id="iscsi-login" data-translate="CREATE_SESSION">Create Session</button>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-gray" id="iscsi-logout" data-translate="CLOSE_SESSION">Close Session</button>
+                </div>
+            </div>
+        </div>
+        <table id="iscsi-session-table" class="table-bordered"></table>
+    </div>
+    <div class="panel panel-default" id="san-disk-panel">
+        <div class="panel-heading">
+            <h3 class="panel-title" data-translate="SAN_DISKS">SAN Disks</h3>
+        </div>
+        <table id="iscsi-disk-table" class="table-bordered"></table>
+    </div>
+    <div id="dialog-nas-disk-create" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" data-translate="CREATE_NAS_DISK">Create NAS Disk</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label" data-translate="TYPE">Type</label>
+                        <select id="nas-type-input" class="form-control">
+                            <option value="nfs">NFS</option>
+                            <option value="cifs">CIFS</option>
+                        </select>
+                    </div>
+                    <div id="create-cifs-disk-notice" class="alert alert-info">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                        <span data-translate="CREATE_CIFS_DISK_NOTICE">Due to filesystem limitation, creating disks over CIFS might take longer to complete.</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" data-translate="NAS_SERVER">Server</label>
+                        <input type="text" id="nas-server-input" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" data-translate="NAS_PATH">Path</label>
+                        <input type="text" id="nas-path-input" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" data-translate="NAS_DISK_SIZE">Size</label>
+                        <input type="text" id="nas-size-input" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" data-translate="USER_ID">Username</label>
+                        <input type="text" id="nas-username-input" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" data-translate="PASSWORD">Password</label>
+                        <input type="password" id="nas-password-input" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="nas-disk-create-ok" type="button" class="btn btn-primary" data-translate="CREATE">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="dialog-iscsi-login" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" data-translate="CONNECT_ISCSI_TARGET">Connect iSCSI Target</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label" data-translate="ISCSI_SERVER">iSCSI Server</label>
+                        <input type="text" id="server-ip-input" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" data-translate="PORT_NUMBER">Port Number</label>
+                        <input type="text" id="server-port-input" class="form-control" />
+                    </div>
+                    <div class="form-group ui-front">
+                        <label class="control-label" data-translate="ISCSI_TARGET_NAME">iSCSI Target Name</label>
+                        <input type="text" id="target-name-input" class="form-control" />
+                        <p class="help-block" data-translate="ISCSI_LOGIN_TARGET_HELP">Leave it blank if you want to connect to all targets on the iSCSI server.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button data-translate="CANCEL" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="iscsi-login-ok" type="button" class="btn btn-primary" data-translate="CONNECT">Connect</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

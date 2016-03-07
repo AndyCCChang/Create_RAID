@@ -1120,11 +1120,6 @@ function ajax_host_local_disk_list(host, successCallback, isGlobal) {
     return ajax_get("/cgi-bin/ezs3/json/host_local_disk_list", data, successCallback, isGlobal);
 }
 
-function ajax_host_create_raid_list(host, successCallback, isGlobal) {
-    var data = { host: host };
-    return ajax_get("/cgi-bin/ezs3/json/host_create_raid_list", data, successCallback, isGlobal);
-}
-
 function ajax_host_iscsi_disk_list(host, successCallback, isGlobal) {
     var data = { host: host };
     return ajax_get("/cgi-bin/ezs3/json/host_iscsi_disk_list", data, successCallback, isGlobal);
