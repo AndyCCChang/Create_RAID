@@ -132,6 +132,7 @@ function host_storage_refresh_page(initCompleted, recurrence) {
             }
         } else {
             localDiskTable.fnClearTable();
+            createRAIDTable.fnClearTable();
             if (a[0].response.length) {
                 localDiskTable.fnAddData(a[0].response);
             }
