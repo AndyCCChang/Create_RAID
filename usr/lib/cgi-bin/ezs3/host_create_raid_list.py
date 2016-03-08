@@ -1,7 +1,7 @@
 import web
 from ezs3.log import EZLog
-from ezs3.diskutils import list_local_disks
-from ezs3.riadutils import list_raids
+#from ezs3.diskutils import list_local_disks
+from ezs3.raidutils import list_raids
 
 import errors
 

@@ -110,8 +110,8 @@ function host_storage_refresh_page(initCompleted, recurrence) {
                           ajax_disk_status_image(hostIP, null, is_global));
         } else {
             return $.when(ajax_host_local_disk_list(hostIP, null, is_global),
-                          ajax_disk_status_image(hostIP, null, is_global)),
-                          ajax_host_create_raid_list(hostIP, null, is_global);
+                          ajax_disk_status_image(hostIP, null, is_global),//, changed to ;
+                          ajax_host_create_raid_list(hostIP, null, is_global));
         }
     }).done(function(a, b, c, d){
         if (is_controller) {
@@ -132,15 +132,23 @@ function host_storage_refresh_page(initCompleted, recurrence) {
             }
         } else {
             localDiskTable.fnClearTable();
-            createRAIDTable.fnClearTable();
             if (a[0].response.length) {
                 localDiskTable.fnAddData(a[0].response);
             }
             if (b[0].response.length) {
                 init_disk_images_table(b[0].response[0], b[0].response[1], b[0].response[2]);
             }
+            createRAIDTable.fnClearTable();
             if (c[0].response.length) {
-                createRAIDTable.fnAddData(a[0].response);
+                console.log("andy")
+            //    console.log(c[0].response.length)
+                console.log(c[0].response)
+            //    console.log("c[0].response[1]")
+            //    console.log(c[0].response[1])
+            //    console.log("c[1]")
+            //    console.log(c[1])
+                createRAIDTable.fnAddData(c[0].response);
+            //    localDiskTable.fnAddData(a[0].response);
             }
 
         }
@@ -235,10 +243,11 @@ function init_create_raid_table(){
            {
                "sTitle": getText("RAID"),
                "sClass": "raid-config",
-               "mData": "r_config"
+               "mData": "raidconfig"
            },
            {
                 "bSortable": false,
+                "sTitle": getText("Create"),
                 "sClass": "raid-check-create center",
                 "sWidth": "5%",
                 "mData": null,
@@ -248,6 +257,7 @@ function init_create_raid_table(){
            },
            { 
                 "bSortable": false,
+                "sTitle": getText("Erase"),
                 "sClass": "raid-check-erase center",
                 "sWidth": "5%",
                 "mData": null,
@@ -265,7 +275,23 @@ function init_create_raid_table(){
                "sClass": "raid-description",
                "mData": "r_description"
 	   }
-        ]
+        ],
+        "aaSorting": [[ 1, "asc" ]],
+        "oLanguage" : {
+            "oPaginate": {
+                "sFirst": getText("PAGE_FIRST"),
+                "sLast": getText("PAGE_LAST"),
+                "sNext": getText("PAGE_NEXT"),
+                "sPrevious": getText("PAGE_PREVIOUS")
+            },
+            "sEmptyTable": getText("EMPTYTABLE"),
+            "sInfo": getText("SHOWING_NUMBER_ENTRY"),
+            "sInfoEmpty": getText("SHOWING_EMPTY"),
+            "sInfoFiltered": getText("FILTER_TOTAL_ENTRY"),
+            "sLengthMenu": getText("SHOW_MENU_ENTRIES"),
+            "sSearch": getText("SEARCH"),
+            "sZeroRecords": getText("SEARCH_NOMATCH")
+        }
     });
 }
 //Andy end
@@ -670,6 +696,7 @@ this.uninit = function() {
     clearTimeout(page_refresh_timer);
     clearTimeout(nas_disk_progress_timer);
     $("#local-disk-table").dataTable().fnDestroy();
+    $("#create-raid-table").dataTable().fnDestroy();
     $("#iscsi-disk-table").dataTable().fnDestroy();
     $("#nas-disk-table").dataTable().fnDestroy();
     $("#iscsi-session-table").dataTable().fnDestroy();

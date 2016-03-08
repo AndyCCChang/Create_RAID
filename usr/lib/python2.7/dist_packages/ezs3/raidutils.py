@@ -33,8 +33,10 @@ MEGACLI_BIN = '/opt/MegaRAID/MegaCli/MegaCli64'
 @remote.callable
 def list_raids():
     raids = []
-    raid_c = "15 + 1 RAID 5"
-    raid = {'raid_c': raid_c}
+    raidc = "15 + 1 RAID 5"
+    status = "OK"
+    description = "Not created yet"
+    raid = {'raidconfig': raidc, 'r_status': status, 'r_description': description}
     raids.append(raid)
     return raids
 
