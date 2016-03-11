@@ -35,9 +35,14 @@ def list_raids():
     raids = []
     raidc = "15 + 1 RAID 5"
     status = "OK"
-    description = "Not created yet"
-    raid = {'raidconfig': raidc, 'r_status': status, 'r_description': description}
-    raids.append(raid)
+    description = "Header"
+    description1 = "JBOD"
+    
+    raid1 = {'raidconfig': raidc, 'r_status': status, 'r_description': description}
+    raid2 = {'raidconfig': raidc, 'r_status': status, 'r_description': description1}
+    #raid = {'raidconfig': raidc, 'r_status': status, 'r_description': description}, {'raidconfig': raidc, 'r_status': status, 'r_description': description}
+    raids.append(raid1)
+    raids.append(raid2)
     return raids
 
 

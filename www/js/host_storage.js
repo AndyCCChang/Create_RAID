@@ -140,9 +140,9 @@ function host_storage_refresh_page(initCompleted, recurrence) {
             }
             createRAIDTable.fnClearTable();
             if (c[0].response.length) {
-                console.log("andy")
+            //    console.log("andy")
             //    console.log(c[0].response.length)
-                console.log(c[0].response)
+            //    console.log(c[0].response)
             //    console.log("c[0].response[1]")
             //    console.log(c[0].response[1])
             //    console.log("c[1]")
@@ -237,6 +237,12 @@ function init_disk_images_table(rows, cols, slots) {
     }
 }
 //Andy
+function raid_confirm(){
+    var create_raid = false;
+    var erase_raid = false;
+    //ajax_raid_confirm(hostIP, 
+}
+//Andy
 function init_create_raid_table(){
     $("#create-raid-table").dataTable({
 	"aoColumns": [
@@ -252,7 +258,7 @@ function init_create_raid_table(){
                 "sWidth": "5%",
                 "mData": null,
                 "mRender": function(data, type, full) {
-                    return '<input type="checkbox"></input>';
+                    return '<input type="checkbox"  id="create_raid"></input>';
                }
            },
            { 
@@ -262,7 +268,7 @@ function init_create_raid_table(){
                 "sWidth": "5%",
                 "mData": null,
                 "mRender": function(data, type, full) {
-                    return '<input type="checkbox"></input>';
+                    return '<input type="checkbox" id="erase_raid"></input>';
                }
            },
            {
@@ -679,6 +685,10 @@ this.init = function(initCompleted) {
             host_storage_refresh_page();
             $("#dialog-iscsi-login").modal('hide');
         });
+    });
+    $("#raid-create-confirm").click(function() {
+        console.log("click raid confirm");
+    
     });
 
     init_local_disk_table();
