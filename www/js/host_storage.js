@@ -140,15 +140,7 @@ function host_storage_refresh_page(initCompleted, recurrence) {
             }
             createRAIDTable.fnClearTable();
             if (c[0].response.length) {
-            //    console.log("andy")
-            //    console.log(c[0].response.length)
-            //    console.log(c[0].response)
-            //    console.log("c[0].response[1]")
-            //    console.log(c[0].response[1])
-            //    console.log("c[1]")
-            //    console.log(c[1])
                 createRAIDTable.fnAddData(c[0].response);
-            //    localDiskTable.fnAddData(a[0].response);
             }
 
         }
@@ -237,10 +229,16 @@ function init_disk_images_table(rows, cols, slots) {
     }
 }
 //Andy
-function raid_confirm(){
+function dialog_raid_confirm(){
     var create_raid = false;
     var erase_raid = false;
-    //ajax_raid_confirm(hostIP, 
+    console.log("click raid confirm");
+    if ($("#create_raid").prop("checked")) {
+        ajax_create_raid(hostIP);
+    }
+    else {
+        console.log("create raid not checked");
+    }
 }
 //Andy
 function init_create_raid_table(){
@@ -686,10 +684,12 @@ this.init = function(initCompleted) {
             $("#dialog-iscsi-login").modal('hide');
         });
     });
-    $("#raid-create-confirm").click(function() {
-        console.log("click raid confirm");
+//    $("#raid-create-confirm").click(function() {
+//       console.log("click raid confirm");
     
-    });
+//    });
+
+    $("#raid-create-confirm").click(dialog_raid_confirm);
 
     init_local_disk_table();
     init_iscsi_disk_table();
@@ -712,6 +712,31 @@ this.uninit = function() {
     $("#iscsi-session-table").dataTable().fnDestroy();
     $("#content").remove();
 }
+
+//Andy
+function host_storage_raid_refresh_page(initCompleted){
+    $.when(ajax_host_create_raid_list()).done(function(a){
+        var raids = []
+        for(var i = 0; i< a[0].response.raidconfig.length; i++){
+            var raid = {
+                raidconfig : a[0].response.raidconfig[i].raidconfig
+                
+            };
+            raids.push(raid);
+        }
+        var raidTable = $("#create-raid-table").dataTable();
+        raidTable.fnClearTable();
+        if(raids.length){
+            raidTable.fnAddData(raids);
+        }
+        if (initCompleted) {
+            $("#content").show();
+            initCompleted();
+        }
+    });
+
+}
+
 
 };
 exports.HostStorage = HostStorage;

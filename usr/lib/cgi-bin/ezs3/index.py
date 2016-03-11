@@ -330,6 +330,7 @@ urls = [
     '/ezs3/host_local_disk_list', 'host_local_disk_list.Handler',
     '/ezs3/host_iscsi_disk_list', 'host_iscsi_disk_list.Handler',
     '/ezs3/host_create_raid_list', 'host_create_raid_list.Handler',
+    '/ezs3/create_raid', 'create_raid.Handler',
     '/ezs3/host_iscsi_list', 'host_iscsi_list.Handler',
     '/ezs3/host_iscsi_login', 'host_iscsi_login.Handler',
     '/ezs3/host_iscsi_logout', 'host_iscsi_logout.Handler',
