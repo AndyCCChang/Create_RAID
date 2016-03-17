@@ -80,6 +80,35 @@ function refresh_nas_disk_panel(recurrence, is_global) {
     }, !recurrence && is_global);
 }
 
+function update_raid_button_status() {
+    var createRAIDTable = $("#create-raid-table").dataTable();
+    var checked = false;
+    //console.log(createRAIDTable);
+    //console.log("call update_raid_button_status()");
+    ajax_host_create_raid_list(hostIP, function(response) {
+        var r_status = response[0].r_status;
+        //console.log("response = " + response[0]);
+        //console.log("r_status = " + r_status);
+        if (r_status == "Created"){
+            console.log("r_status == OK");
+            //$("#raid-create-confirm").prop("disabled", true);
+            //$("#create_raid").prop("checked", false);
+        }
+    });
+
+    //iterateSelectedItems("#create-raid-table", function(last, raid) {
+    //    checked = true;
+    //    console.log("raid.r_status");
+    //    console.log(raid.r_status);
+    //    if (raid.r_status == 'OK' && r_description == 'Header' ) {
+    //        console.log("create-raid-table");
+    //        $("#raid-create-confirm").prop("disabled", true);
+        
+    //    }
+    //});
+}
+
+
 function host_storage_refresh_page(initCompleted, recurrence) {
     //Andy
     var createRAIDTable = $("#create-raid-table").dataTable();
@@ -151,7 +180,7 @@ function host_storage_refresh_page(initCompleted, recurrence) {
         if (recurrence == true) {
             page_refresh_timer = setTimeout(function() {
                     host_storage_refresh_page(null, true);
-            }, 10000);
+            }, 100000);
         }
     });
 }
@@ -228,11 +257,17 @@ function init_disk_images_table(rows, cols, slots) {
         }
     }
 }
-//Andy
+//Andy called?
 function dialog_raid_confirm(){
     var create_raid = false;
     var erase_raid = false;
     console.log("click raid confirm");
+    var raid_desc_list = [];
+    iterateSelectedItems("#create-raid-table", function(last, raid) {
+        console.log("in iterateSelectedItems");
+        raid_list.push(raid.r_description);
+        ajax_create_raid(hostIP, raid_list);
+    });
     if ($("#create_raid").prop("checked")) {
         ajax_create_raid(hostIP);
     }
@@ -256,7 +291,13 @@ function init_create_raid_table(){
                 "sWidth": "5%",
                 "mData": null,
                 "mRender": function(data, type, full) {
-                    return '<input type="checkbox"  id="create_raid"></input>';
+                    if (data.r_status == "Created"){
+                        return '<input type="checkbox" disabled></input>';
+                    }
+                    else {
+                        return '<input type="checkbox"></input>';
+                    }
+                    //return '<input type="checkbox"  id="create_raid"></input>';
                }
            },
            { 
@@ -266,7 +307,12 @@ function init_create_raid_table(){
                 "sWidth": "5%",
                 "mData": null,
                 "mRender": function(data, type, full) {
-                    return '<input type="checkbox" id="erase_raid"></input>';
+                    if (data.r_status != "Created"){
+                        return '<input type="checkbox" disabled></input>';
+                    }
+                    else {
+                        return '<input type="checkbox"></input>';
+                    }
                }
            },
            {
@@ -280,6 +326,11 @@ function init_create_raid_table(){
                "mData": "r_description"
 	   }
         ],
+        "fnDrawCallback": function(oSettings) { //useless?
+           update_raid_button_status();
+           $(".raid-check-create").click(update_raid_button_status()); 
+           $(".raid-check-erase").click(update_raid_button_status()); 
+        },
         "aaSorting": [[ 1, "asc" ]],
         "oLanguage" : {
             "oPaginate": {
@@ -697,8 +748,19 @@ this.init = function(initCompleted) {
     init_iscsi_session_table();
     //Andy
     init_create_raid_table();
+    //console.log("before");
+    //function(response){
+    //host_storage_raid_refresh_page(initCompleted); // Can't be used? missing parameter host?
+        //if (completed) {
+        //    completed();
+        //}
+
+    //}
+    //host_storage_raid_refresh_page(initCompleted); // Can't be used? missing parameter host?
+    //console.log("after");
 
     host_storage_refresh_page(initCompleted, true);
+    //update_raid_button_status();
 }
 
 this.uninit = function() {
@@ -715,12 +777,15 @@ this.uninit = function() {
 
 //Andy
 function host_storage_raid_refresh_page(initCompleted){
-    $.when(ajax_host_create_raid_list()).done(function(a){
-        var raids = []
+    console.log("inside host_storage_raid_refresh_page");
+    $.when(ajax_host_create_raid_list(hostIP)).done(function(a){
+        var raids = [];
+        //console.log(a[0].response.raidconfig.length);
         for(var i = 0; i< a[0].response.raidconfig.length; i++){
             var raid = {
-                raidconfig : a[0].response.raidconfig[i].raidconfig
-                
+                raidconfig: a[0].response.raidconfig[i].raidconfig,
+                r_description: a[0].response.r_description[i].r_description,
+                r_status: a[0].response.r_status[i].r_status   
             };
             raids.push(raid);
         }
@@ -734,7 +799,11 @@ function host_storage_raid_refresh_page(initCompleted){
             initCompleted();
         }
     });
+}
 
+//Andy
+function update_raid_dialog(){
+    
 }
 
 
