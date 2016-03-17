@@ -20,7 +20,7 @@ from ezs3.config import Ezs3CephConfig
 from ezs3.cache import LocalCache
 from ezs3.utils import mount_fs
 from ezmonitor.cluster_metric_manager import ClusterMetricManager
-VERSION = "V1.00"
+VERSION = "V1.0"
 logger = EZLog.get_logger(__name__)
 cl = get_central_logger()
 ALIGNMENT_SECTORS = 2048
