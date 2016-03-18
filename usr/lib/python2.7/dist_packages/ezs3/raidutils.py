@@ -20,7 +20,7 @@ from ezs3.config import Ezs3CephConfig
 from ezs3.cache import LocalCache
 from ezs3.utils import mount_fs
 from ezmonitor.cluster_metric_manager import ClusterMetricManager
-VERSION = "V1.00"
+VERSION = "V1.1"
 logger = EZLog.get_logger(__name__)
 cl = get_central_logger()
 ALIGNMENT_SECTORS = 2048
@@ -33,6 +33,10 @@ A1970_PRODUCTNAME = "1970"
 EXE_PATH = "/promise/bin"
 RAID_CONFIG = "/etc/ezs3/raid_conf"
 SIMULATION_MODE = 1
+HEADER = "Header"
+JBOD1 = "JBOD1"
+JBOD2 = "JBOD2"
+JBOD3 = "JBOD3"
 
 @remote.callable
 def list_raids():
@@ -53,7 +57,7 @@ def list_raids():
 def create_raid_config_file():
     do_cmd("echo \"[]\" > " + RAID_CONFIG)
     #print "create_raid_config_file"
-def init_raid_config_file(productname, is_add_raid_raw):
+def init_raid_config_file(productname):
     if A1100_PRODUCTNAME in productname:
         print ""
         raids = []
@@ -61,11 +65,11 @@ def init_raid_config_file(productname, is_add_raid_raw):
         raidc = "15 + 1 RAID 5"
         status = "Created"
         status1 = "Not Created"
-        descriptionH = "Header"
+        descriptionH = HEADER
         descriptionJ = "JBOD"
-        descriptionJ1 = "JBOD1"
-        descriptionJ2 = "JBOD2"
-        descriptionJ3 = "JBOD3"
+        descriptionJ1 = JBOD1
+        descriptionJ2 = JBOD2
+        descriptionJ3 = JBOD3
         raidH = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionH}
         raidJ1 = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionJ1}
         raidJ2 = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionJ2}
@@ -99,7 +103,7 @@ def init_raid_config_file(productname, is_add_raid_raw):
     file_ = open(RAID_CONFIG, 'w')
     file_.write("{}".format(raids))
     file_.close()
-
+    update_raid_config_file()
 
 #r_description: Header, JBOD1, JBOD2, JBOD3
 def create_raid(productname, r_description):
@@ -107,7 +111,7 @@ def create_raid(productname, r_description):
     spare_status = 0 #-1: failed, 0: existed, 1: success
 
     if SIMULATION_MODE:
-        array_status = spare_status = 2 #2: r_status: Not Created
+        array_status = spare_status = 1 #2: r_status: Not Created
         #spare_status = 1
         update_r_status_config_file(r_description, array_status, spare_status)
         #return array_status, spare_status
@@ -116,7 +120,7 @@ def create_raid(productname, r_description):
         phdrv_count_A1100 = count_phydrv_A1100()
         count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
         count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
-        if(r_description == "Header"):
+        if(r_description == HEADER):
             if count_ok_array == "1\n":
                 print("RAID existed")
                 array_status = 0
@@ -125,103 +129,24 @@ def create_raid(productname, r_description):
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 16 -t g -r y")
                 spare_status = 1
-        elif(r_description == "JBOD1"):#need to check if JBOD1 is created or not
+        elif(r_description == JBOD1):#need to check if JBOD1 is created or not
                 do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 32 -t g -r y")
                 spare_status = 1
-        elif(r_description == "JBOD2"):#need to check if JBOD2 is created or not
+        elif(r_description == JBOD2):#need to check if JBOD2 is created or not
                 do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 48 -t g -r y")
                 spare_status = 1
-        elif(r_description == "JBOD3"):#need to check if JBOD2 is created or not
+        elif(r_description == JBOD3):#need to check if JBOD2 is created or not
                 do_cmd("cliib -u admin -p password -C array -a add -p49~63 -l\\\"raid=5\\\"")
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 64 -t g -r y")
                 spare_status = 1
-
+        update_raid_config_file()
         return array_status, spare_status
-
-
-        #need to be deleted...
-        if phdrv_count_A1100 ==16:
-            if count_ok_array == "1\n":
-                print("RAID existed")
-                array_status = 0
-            else:
-                #print("RAID not existed")
-                do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-                array_status = 1
-        elif phdrv_count_A1100 ==32:
-            if count_ok_array == "2\n":
-                print("RAID existed")
-                array_status = 0
-            else:
-                do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-                do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
-                array_status = 1
-        elif phdrv_count_A1100 ==48:
-            if count_ok_array == "3\n":
-                print("RAID existed")
-                array_status = 0
-            else:
-                do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-                do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
-                do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
-                array_status = 1
-        elif phdrv_count_A1100 ==64:
-            if count_ok_array == "4\n":
-                print("RAID existed")
-                array_status = 0
-            else:
-                do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-                do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
-                do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
-                do_cmd("cliib -u admin -p password -C array -a add -p49~63 -l\\\"raid=5\\\"")
-                array_status = 1
-        else:
-            print("Number of physical drives are not correct, needs to be full of drives.")
-            array_status = -1
-        #spare drive
-        if phdrv_count_A1100 ==16:
-            if count_ok_spare == "1\n":
-                print("Hot spare drive existed")
-                spare_status = 0
-            else:
-                do_cmd("cliib -u admin -p password -C spare -a add -p 16 -t g -r y")
-                spare_status = 1
-        elif phdrv_count_A1100 ==32:
-            if count_ok_spare == "2\n":
-                print("Hot spare drive existed")
-                spare_status = 0
-            else:
-                do_cmd("cliib -u admin -p password -C spare -a add -p 16 -t g -r y")
-                do_cmd("cliib -u admin -p password -C spare -a add -p 32 -t g -r y")
-                spare_status = 1
-        elif phdrv_count_A1100 ==48:
-            if count_ok_spare == "3\n":
-                print("Hot spare drive existed")
-                spare_status = 0
-            else:
-                do_cmd("cliib -u admin -p password -C spare -a add -p 16 -t g -r y")
-                do_cmd("cliib -u admin -p password -C spare -a add -p 32 -t g -r y")
-                do_cmd("cliib -u admin -p password -C spare -a add -p 48 -t g -r y")
-                spare_status = 1
-        elif phdrv_count_A1100 ==64:
-            if count_ok_spare == "4\n":
-                print("Hot spare drive existed")
-                spare_status = 0
-            else:
-                do_cmd("cliib -u admin -p password -C spare -a add -p 16 -t g -r y")
-                do_cmd("cliib -u admin -p password -C spare -a add -p 32 -t g -r y")
-                do_cmd("cliib -u admin -p password -C spare -a add -p 48 -t g -r y")
-                do_cmd("cliib -u admin -p password -C spare -a add -p 64 -t g -r y")
-                spare_status = 1
-        else:
-            print("Number of physical drives are not correct, needs to be full of drives.")
-            spare_status = -1
-        return array_status, spare_status
+    #A1970
     elif A1970_PRODUCTNAME in productname:
         is_VD = do_cmd("{}/check_mcli_array.sh".format(EXE_PATH))
         if is_VD == "VD\nVD\nVD\n":
@@ -241,6 +166,7 @@ def create_raid(productname, r_description):
                 logger.info("Setting RAID failed, please check physical drives status.")
                 raid_status = -1
                 spare_status = -1
+            update_raid_config_file()
             return array_status, spare_status
 def erase_raid(productname, r_description):
     print "erase_raid"
@@ -270,71 +196,104 @@ def add_raid_raw():
 
 def update_r_status_config_file(r_description, array_status, spare_status):
     raids = list_raids()
+    r_desc_existed = 0
     if array_status == 1 and spare_status == 1:
         new_r_status = "Created"
     elif array_status == 2 and spare_status == 2:
         new_r_status = "Not Created"
     for n, i in enumerate(raids):
-        #print "n: "
-        #print n
-        #print "i: "
-        #print i
         for j, k in i.iteritems():
-            #print "j: " + j
-            #print "k: " + k
             if k == r_description:
-                #m = i.next
+                r_desc_existed = 1
                 old_r_status = i["r_status"]
-                i["r_status"] = new_r_status
-                print "Updated " + old_r_status + " to " + new_r_status
-                updated = 1
-         
-            #    i[j] = "Created"
-    file_ = open('/etc/ezs3/raid_conf', 'w')
-    file_.write("{}".format(raids))
-    file_.close()
+                if old_r_status != new_r_status:
+                    i["r_status"] = new_r_status
+                    print "Updated " + old_r_status + " to " + new_r_status
+                    updated = 1
+    if not r_desc_existed:
+        print "table raw is not enough, so run init?"
+        productname = get_productname()
+        init_raid_config_file(productname)
+        
+    if updated:
+        file_ = open('/etc/ezs3/raid_conf', 'w')
+        file_.write("{}".format(raids))
+        file_.close()
 #TODO: set created if in array is existed
-def refresh_raid_config_file(r_description, array_status, spare_status):
+def update_raid_config_file():
     if SIMULATION_MODE:
         return 0
     else:
         count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
+        count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
         phdrv_count_A1100 = count_phydrv_A1100()
     if phdrv_count_A1100 ==16:
-        if count_ok_array == "1\n":
-            array_status = 0
-            print "set 1 created"
+        if count_ok_array == "1\n" and count_ok_spare == "1\n":
+            array_status = 1
+            spare_status = 1
+            update_r_status_config_file(HEADER, array_status, spare_status)
         else:
+            array_status = 2
+            spare_status = 2
+            update_r_status_config_file(HEADER, array_status, spare_status)
+
             #print("RAID not existed")
             #do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
             array_status = 1
     elif phdrv_count_A1100 ==32:
-        if count_ok_array == "2\n":
-            print("RAID existed")
-            array_status = 0
+        if count_ok_array == "2\n" and count_ok_spare == "2\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 1, 1)
+        elif count_ok_array == "1\n" and count_ok_spare == "1\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 2, 2)
         else:
-            do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-            do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
-            array_status = 1
+            update_r_status_config_file(HEADER, 2, 2)
+            update_r_status_config_file(JBOD1, 2, 2)
+
     elif phdrv_count_A1100 ==48:
-        if count_ok_array == "3\n":
-            print("RAID existed")
-            array_status = 0
+        if count_ok_array == "3\n" and count_ok_spare == "3\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 1, 1)
+            update_r_status_config_file(JBOD2, 1, 1)
+        elif count_ok_array == "2\n" and count_ok_spare == "2\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 1, 1)
+            update_r_status_config_file(JBOD2, 2, 2)
+        elif count_ok_array == "1\n" and count_ok_spare == "1\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 2, 2)
+            update_r_status_config_file(JBOD2, 2, 2)
         else:
-            do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-            do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
-            do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
-            array_status = 1
+            update_r_status_config_file(HEADER, 2, 2)
+            update_r_status_config_file(JBOD1, 2, 2)
+            update_r_status_config_file(JBOD2, 2, 2)
     elif phdrv_count_A1100 ==64:
-        if count_ok_array == "4\n":
-            print("RAID existed")
-            array_status = 0
+        if count_ok_array == "4\n" and count_ok_spare == "4\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 1, 1)
+            update_r_status_config_file(JBOD2, 1, 1)
+            update_r_status_config_file(JBOD3, 1, 1)
+        elif count_ok_array == "3\n" and count_ok_spare == "3\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 1, 1)
+            update_r_status_config_file(JBOD2, 1, 1)
+            update_r_status_config_file(JBOD3, 0, 0)
+        elif count_ok_array == "2\n" and count_ok_spare == "2\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 1, 1)
+            update_r_status_config_file(JBOD2, 2, 2)
+            update_r_status_config_file(JBOD3, 2, 2)
+        elif count_ok_array == "1\n" and count_ok_spare == "1\n":
+            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(JBOD1, 2, 2)
+            update_r_status_config_file(JBOD2, 2, 2)
+            update_r_status_config_file(JBOD3, 2, 2)
         else:
-            do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-            do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
-            do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
-            do_cmd("cliib -u admin -p password -C array -a add -p49~63 -l\\\"raid=5\\\"")
-            array_status = 1
+            update_r_status_config_file(HEADER, 2, 2)
+            update_r_status_config_file(JBOD1, 2, 2)
+            update_r_status_config_file(JBOD2, 2, 2)
+            update_r_status_config_file(JBOD3, 2, 2)
 
 @remote.callable
 def create_raid2():
