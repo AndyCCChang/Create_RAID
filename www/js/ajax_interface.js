@@ -1121,16 +1121,21 @@ function ajax_host_local_disk_list(host, successCallback, isGlobal) {
 }
 
 function ajax_host_create_raid_list(host, successCallback, isGlobal) {
-    var data = { host: host };
+    var data = { host: host
+                 //storage_box: storage_box
+    };
     return ajax_get("/cgi-bin/ezs3/json/host_create_raid_list", data, successCallback, isGlobal);
 }
-
-function ajax_create_raid(host, raid_desc_list, successCallback, isGlobal) {
+//create_raid
+function ajax_create_raid(host, storage_box, successCallback, isGlobal) {
+//function ajax_create_raid(host, successCallback, isGlobal) {
     var data = { 
         host: host,
-        raid_desc_list: raid_desc_list
+        storage_box: storage_box
     };
-    return ajax_get("/cgi-bin/ezs3/json/create_raid", data, raid_desc_list, successCallback, isGlobal);
+    //return ajax_post("/cgi-bin/ezs3/json/sds_admin_add", data, successCallback, isGlobal);
+    //return ajax_post("/cgi-bin/ezs3/json/create_raid", data, successCallback, isGlobal);
+    return ajax_get("/cgi-bin/ezs3/json/create_raid", data, successCallback, isGlobal);
 }
 
 function ajax_host_iscsi_disk_list(host, successCallback, isGlobal) {

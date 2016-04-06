@@ -33,13 +33,16 @@ A1970_PRODUCTNAME = "1970"
 EXE_PATH = "/promise/bin"
 RAID_CONFIG = "/etc/ezs3/raid_conf"
 SIMULATION_MODE = 1
-HEADER = "Header"
+HEAD = "Head"
 JBOD1 = "JBOD1"
 JBOD2 = "JBOD2"
 JBOD3 = "JBOD3"
 
 @remote.callable
 def list_raids():
+    logger.info("andy in list_raids")
+    productname = get_productname()
+    logger.info("productname: %s", productname)
     if not os.path.isfile(RAID_CONFIG):
         if SIMULATION_MODE:
             productname = "RS300-E8-RS4"
@@ -47,7 +50,10 @@ def list_raids():
             productname = get_productname()
         #print "not RAID_CONFIG"
         create_raid_config_file()
-        init_raid_config_file(productname)
+    #init_raid_config_file(productname)
+    size_raid_conf = get_size_raid_conf()
+    if size_raid_conf <4:
+        init_raid_config_file(productname)     
     
     with open(RAID_CONFIG) as infp:
         for line in infp:
@@ -58,6 +64,7 @@ def create_raid_config_file():
     do_cmd("echo \"[]\" > " + RAID_CONFIG)
     #print "create_raid_config_file"
 def init_raid_config_file(productname):
+    #logger.info("productname: %s", productname)
     if A1100_PRODUCTNAME in productname:
         print ""
         raids = []
@@ -65,15 +72,17 @@ def init_raid_config_file(productname):
         raidc = "15 + 1 RAID 5"
         status = "Created"
         status1 = "Not Created"
-        descriptionH = HEADER
+        head = HEAD
         descriptionJ = "JBOD"
-        descriptionJ1 = JBOD1
-        descriptionJ2 = JBOD2
-        descriptionJ3 = JBOD3
-        raidH = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionH}
-        raidJ1 = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionJ1}
-        raidJ2 = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionJ2}
-        raidJ3 = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionJ3}
+        jbod1 = JBOD1
+        jbod2 = JBOD2
+        jbod3 = JBOD3
+        description = ""
+        raidH = {'storage_box': head , 'raidconfig': raidc, 'r_status': status1, 'r_description': description}
+        raidJ1 = {'storage_box': jbod1, 'raidconfig': raidc, 'r_status': status1, 'r_description': description}
+        raidJ2 = {'storage_box': jbod2, 'raidconfig': raidc, 'r_status': status1, 'r_description': description}
+        raidJ3 = {'storage_box': jbod3, 'raidconfig': raidc, 'r_status': status1, 'r_description': description}
+        #raidJ3 = {'raidconfig': raidc, 'r_status': status1, 'r_description': descriptionJ3}
         if SIMULATION_MODE:
             raids.append(raidH)
             raids.append(raidJ1)
@@ -106,21 +115,26 @@ def init_raid_config_file(productname):
     update_raid_config_file()
 
 #r_description: Header, JBOD1, JBOD2, JBOD3
-def create_raid(productname, r_description):
+def create_raids(storage_box):
+    if not SIMULATION_MODE:
+        productname = get_productname()
     array_status = 0 #-1: failed, 0: existed, 1: success
     spare_status = 0 #-1: failed, 0: existed, 1: success
 
     if SIMULATION_MODE:
-        array_status = spare_status = 1 #2: r_status: Not Created
+        array_status = 1 
+        spare_status = 1 #2: r_status: Not Created
         #spare_status = 1
-        update_r_status_config_file(r_description, array_status, spare_status)
+        update_r_status_config_file(storage_box, array_status, spare_status)
+        return
+        #return 1, 1
         #return array_status, spare_status
 
     if A1100_PRODUCTNAME in productname:
         phdrv_count_A1100 = count_phydrv_A1100()
         count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
         count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
-        if(r_description == HEADER):
+        if(storage_box == HEADER):
             if count_ok_array == "1\n":
                 print("RAID existed")
                 array_status = 0
@@ -129,17 +143,17 @@ def create_raid(productname, r_description):
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 16 -t g -r y")
                 spare_status = 1
-        elif(r_description == JBOD1):#need to check if JBOD1 is created or not
+        elif(storage_box == JBOD1):#need to check if JBOD1 is created or not
                 do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 32 -t g -r y")
                 spare_status = 1
-        elif(r_description == JBOD2):#need to check if JBOD2 is created or not
+        elif(storage_box == JBOD2):#need to check if JBOD2 is created or not
                 do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 48 -t g -r y")
                 spare_status = 1
-        elif(r_description == JBOD3):#need to check if JBOD2 is created or not
+        elif(storage_box == JBOD3):#need to check if JBOD2 is created or not
                 do_cmd("cliib -u admin -p password -C array -a add -p49~63 -l\\\"raid=5\\\"")
                 array_status = 1
                 do_cmd("cliib -u admin -p password -C spare -a add -p 64 -t g -r y")
@@ -168,7 +182,7 @@ def create_raid(productname, r_description):
                 spare_status = -1
             update_raid_config_file()
             return array_status, spare_status
-def erase_raid(productname, r_description):
+def erase_raid(productname, storage_box):
     print "erase_raid"
 
 def count_phydrv_A1100():
@@ -194,31 +208,58 @@ def add_raid_raw():
             print "16"       
 
 
-def update_r_status_config_file(r_description, array_status, spare_status):
+def update_r_status_config_file(storage_box, array_status, spare_status):
+    #return
     raids = list_raids()
-    r_desc_existed = 0
+    #return
+    size_raid_conf = get_size_raid_conf()
+    productname = get_productname()
+    logger.info("raids: %s", raids)
+    storage_box_existed = 0
+    updated = 0
+    c = 0
+     
     if array_status == 1 and spare_status == 1:
         new_r_status = "Created"
     elif array_status == 2 and spare_status == 2:
         new_r_status = "Not Created"
+    else:
+        new_r_status = "Not Created"
+    #return
     for n, i in enumerate(raids):
         for j, k in i.iteritems():
-            if k == r_description:
-                r_desc_existed = 1
+            #return #ok
+            if k == storage_box:
+                storage_box_existed = 1
+                logger.info("k:%s ", k)
+                #return #ok
                 old_r_status = i["r_status"]
+                #return #ok
                 if old_r_status != new_r_status:
                     i["r_status"] = new_r_status
-                    print "Updated " + old_r_status + " to " + new_r_status
+                    #return #ok
+                    #print "Updated " + old_r_status + " to " + new_r_status
                     updated = 1
-    if not r_desc_existed:
+                    c = c + 1
+                    logger.info("c: ")
+                    logger.info(c)
+                #return
+    #return
+    if not storage_box_existed:
         print "table raw is not enough, so run init?"
-        productname = get_productname()
         init_raid_config_file(productname)
-        
+    if size_raid_conf <4:
+        init_raid_config_file(productname)     
     if updated:
+        logger.info("updated: %s", updated)
         file_ = open('/etc/ezs3/raid_conf', 'w')
         file_.write("{}".format(raids))
         file_.close()
+
+def get_size_raid_conf():
+    size_raid_conf = os.path.getsize(RAID_CONFIG)
+    return size_raid_conf
+
 #TODO: set created if in array is existed
 def update_raid_config_file():
     if SIMULATION_MODE:

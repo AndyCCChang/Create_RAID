@@ -195,6 +195,7 @@ admin_urls = [
     '/ezs3/gateway_vm_details_get', 'gateway_vm_details_get.Handler',
     '/ezs3/gateway_vm_terminate', 'gateway_vm_terminate.Handler',
     '/ezs3/license_info_get', 'license_info_get.Handler',
+    '/ezs3/cluster_license_info_get', 'cluster_license_info_get.Handler',
     '/ezs3/license_set', 'license_set.Handler',
     '/ezs3/license_check', 'license_check.Handler',
     '/ezs3/storage_volume_list', 'storage_volume_list.Handler',
@@ -247,7 +248,8 @@ admin_urls = [
     '/ezs3/timezone_set', 'timezone_set.Handler',
     '/ezs3/timezone_get', 'timezone_get.Handler',
     '/ezs3/get_rack_aware_status', 'get_rack_aware_status.Handler',
-    '/ezs3/set_rackid', 'set_rackid.Handler'
+    '/ezs3/set_rackid', 'set_rackid.Handler',
+    '/ezs3/host_version_info_get', 'host_version_info_get.Handler'
 ]
 
 urls = [

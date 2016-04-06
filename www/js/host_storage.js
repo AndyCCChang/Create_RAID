@@ -85,6 +85,7 @@ function update_raid_button_status() {
     var checked = false;
     //console.log(createRAIDTable);
     //console.log("call update_raid_button_status()");
+    
     ajax_host_create_raid_list(hostIP, function(response) {
         var r_status = response[0].r_status;
         //console.log("response = " + response[0]);
@@ -261,9 +262,12 @@ function init_disk_images_table(rows, cols, slots) {
 function dialog_raid_confirm(){
     var create_raid = false;
     var erase_raid = false;
+    var raid_desc = $("#create-raid-table").data("r_description");
+    //create_raid_confirm(r_desc, "#create-raid-table");//
     console.log("click raid confirm");
     var raid_desc_list = [];
-    iterateSelectedItems("#create-raid-table", function(last, raid) {
+    console.log(selectedItemsLength("#create-raid-table"));
+    iterateSelectedItems("#create-raid-table", function(last, raid, raw) {
         console.log("in iterateSelectedItems");
         raid_list.push(raid.r_description);
         ajax_create_raid(hostIP, raid_list);
@@ -279,9 +283,25 @@ function dialog_raid_confirm(){
 function init_create_raid_table(){
     $("#create-raid-table").dataTable({
 	"aoColumns": [
+           //{
+           //     "bSortable": false,
+           //     "sTitle": getText("Create"),
+           //     "sClass": "raid-check-create2 center",
+           //     "sWidth": "5%",
+           //     "mData": null,
+           //     "mRender": function(data, type, full) {
+           //         return '<input type="checkbox"></input>';
+           //      }
+           //},
+           {
+               "sTitle": getText("Storage Box"),
+               "sClass": "storage-box",
+               "mData": "storage_box"
+           },
            {
                "sTitle": getText("RAID"),
                "sClass": "raid-config",
+               "sWidth": "100%",
                "mData": "raidconfig"
            },
            {
@@ -297,7 +317,7 @@ function init_create_raid_table(){
                     else {
                         return '<input type="checkbox"></input>';
                     }
-                    //return '<input type="checkbox"  id="create_raid"></input>';
+                    return '<input type="checkbox"  id="create_raid"></input>';
                }
            },
            { 
@@ -327,11 +347,19 @@ function init_create_raid_table(){
 	   }
         ],
         "fnDrawCallback": function(oSettings) { //useless?
-           update_raid_button_status();
-           $(".raid-check-create").click(update_raid_button_status()); 
-           $(".raid-check-erase").click(update_raid_button_status()); 
+           //update_raid_button_status();
+           //$(".raid-check-create").click(update_raid_button_status()); 
+           //$(".raid-check-erase").click(update_raid_button_status()); 
         },
         "aaSorting": [[ 1, "asc" ]],
+        //"fnHeaderCallback": function(nHead, aData, iStart, iEnd, aiDisplay) {
+        //    nHead.getElementsByTagName('th')[0].innerHTML = '<input type="checkbox" class="raid-check-create-all"></input>';
+        //    $('#create-raid-table' + " .raid-check-create-all").click(function() {
+        //        $('#create-raid-table' + " .raid-check-create input").each(function() {
+        //            $(this).prop("checked", $('#create-raid-table' + " .raid-check-create-all").prop("checked"));
+        //        });
+        //    })
+        //},
         "oLanguage" : {
             "oPaginate": {
                 "sFirst": getText("PAGE_FIRST"),
@@ -739,8 +767,40 @@ this.init = function(initCompleted) {
 //       console.log("click raid confirm");
     
 //    });
+    //$("#raid-create-confirm").click(dialog_raid_confirm);
+    $("#raid-create-confirm").click(function(){
+        //var storage_box = $("#create-raid-table").data("storage_box");
+        var storage_box;
+        //create_raid_confirm(r_desc, "#create-raid-table");//
+        console.log("click raid confirm");
+        //console.log("storage_box: " + storage_box);
+        var storage_box_list = [];
+        //console.log(selectedItemsLength("#create-raid-table")); //Need to add td:nthxxxx in common.js
+        iterateSelectedItems("#create-raid-table", function(last, raid, row) {
+            console.log("in iterateSelectedItems");
+            console.log("raid.storage_box: " + raid.storage_box);
+            storage_box = raid.storage_box;
+            console.log("storage_box: " + storage_box);
+            storage_box_list.push(raid.storage_box);
+            //ajax_pool_add_node("1", "1");
+            ajax_create_raid(hostIP, storage_box_list, function(response){
+            //ajax_create_raid(hostIP, function(response){
+            //ajax_create_raid(hostIP, raid.storage_box, function(response){
+                var raidTable = $("#create-raid-table").dataTable();
+                //for (var i = 0; i < storage_box_list.length; i++) {
+                //    raidTable.fnAddData(storage_box_list[i]);
+                //}
+                console.log("before modal hide");
+                host_storage_refresh_page();
+                //$("#create-raid-table").modal('hide');
+                $("#dialog-create-raid").modal('hide');
+                console.log("after modal hide");
 
-    $("#raid-create-confirm").click(dialog_raid_confirm);
+            });
+        });
+    });
+
+
 
     init_local_disk_table();
     init_iscsi_disk_table();
@@ -760,6 +820,8 @@ this.init = function(initCompleted) {
     //console.log("after");
 
     host_storage_refresh_page(initCompleted, true);
+    //$("#raid-create-confirm").click(dialog_raid_confirm);
+
     //update_raid_button_status();
 }
 
@@ -802,9 +864,9 @@ function host_storage_raid_refresh_page(initCompleted){
 }
 
 //Andy
-function update_raid_dialog(){
+//function update_raid_dialog(){
     
-}
+//}
 
 
 };

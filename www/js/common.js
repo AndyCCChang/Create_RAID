@@ -211,11 +211,10 @@ function iterate_items(tableSelector, callback) {
     var total = items_length(tableSelector);
     var table = $(tableSelector).dataTable();
     var count = 0;
-    //console.log("callback: andy:  " + callback);
     table.$("tr").each(function() {
         var row = this;
         var item = table.fnGetData(this);
-        if ($(this).find("td:first-child input").prop("checked") || $(this).find("td:nth-child(2) input").prop("checked") || $(this).find("td:nth-child(3) input").prop("checked") ) {
+        if ($(this).find("td:first-child input").prop("checked") || $(this).find("td:nth-child(3) input").prop("checked") || $(this).find("td:nth-child(4) input").prop("checked") ) {
         //if ($(this).find("td:nth-child(3) input").prop("checked")) {
             if (callback) {
                 if (++count == total) {
