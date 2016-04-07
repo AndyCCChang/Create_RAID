@@ -32,7 +32,7 @@ A1100_PRODUCTNAME = "RS300-E8-RS4"
 A1970_PRODUCTNAME = "1970"
 EXE_PATH = "/promise/bin"
 RAID_CONFIG = "/etc/ezs3/raid_conf"
-SIMULATION_MODE = 1
+SIMULATION_MODE = 0
 HEAD = "Head"
 JBOD1 = "JBOD1"
 JBOD2 = "JBOD2"
@@ -48,13 +48,14 @@ def list_raids():
             productname = "RS300-E8-RS4"
         else:
             productname = get_productname()
+            logger.info("productname: %s", productname)
         #print "not RAID_CONFIG"
         create_raid_config_file()
     #init_raid_config_file(productname)
     size_raid_conf = get_size_raid_conf()
     if size_raid_conf <4:
         init_raid_config_file(productname)     
-    
+    update_raid_config_file()
     with open(RAID_CONFIG) as infp:
         for line in infp:
             DATA = eval(line)
@@ -134,7 +135,7 @@ def create_raids(storage_box):
         phdrv_count_A1100 = count_phydrv_A1100()
         count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
         count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
-        if(storage_box == HEADER):
+        if(storage_box == HEAD):
             if count_ok_array == "1\n":
                 print("RAID existed")
                 array_status = 0
@@ -262,76 +263,78 @@ def get_size_raid_conf():
 
 #TODO: set created if in array is existed
 def update_raid_config_file():
+    logger.info("update_raid_config_file")
     if SIMULATION_MODE:
         return 0
     else:
         count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
         count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
         phdrv_count_A1100 = count_phydrv_A1100()
+        logger.info("phdrv_count_A1100: %s", phdrv_count_A1100)
     if phdrv_count_A1100 ==16:
         if count_ok_array == "1\n" and count_ok_spare == "1\n":
             array_status = 1
             spare_status = 1
-            update_r_status_config_file(HEADER, array_status, spare_status)
+            update_r_status_config_file(HEAD, array_status, spare_status)
         else:
             array_status = 2
             spare_status = 2
-            update_r_status_config_file(HEADER, array_status, spare_status)
+            update_r_status_config_file(HEAD, array_status, spare_status)
 
             #print("RAID not existed")
             #do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
             array_status = 1
     elif phdrv_count_A1100 ==32:
         if count_ok_array == "2\n" and count_ok_spare == "2\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 1, 1)
         elif count_ok_array == "1\n" and count_ok_spare == "1\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 2, 2)
         else:
-            update_r_status_config_file(HEADER, 2, 2)
+            update_r_status_config_file(HEAD, 2, 2)
             update_r_status_config_file(JBOD1, 2, 2)
 
     elif phdrv_count_A1100 ==48:
         if count_ok_array == "3\n" and count_ok_spare == "3\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 1, 1)
             update_r_status_config_file(JBOD2, 1, 1)
         elif count_ok_array == "2\n" and count_ok_spare == "2\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 1, 1)
             update_r_status_config_file(JBOD2, 2, 2)
         elif count_ok_array == "1\n" and count_ok_spare == "1\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 2, 2)
             update_r_status_config_file(JBOD2, 2, 2)
         else:
-            update_r_status_config_file(HEADER, 2, 2)
+            update_r_status_config_file(HEAD, 2, 2)
             update_r_status_config_file(JBOD1, 2, 2)
             update_r_status_config_file(JBOD2, 2, 2)
     elif phdrv_count_A1100 ==64:
         if count_ok_array == "4\n" and count_ok_spare == "4\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 1, 1)
             update_r_status_config_file(JBOD2, 1, 1)
             update_r_status_config_file(JBOD3, 1, 1)
         elif count_ok_array == "3\n" and count_ok_spare == "3\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 1, 1)
             update_r_status_config_file(JBOD2, 1, 1)
             update_r_status_config_file(JBOD3, 0, 0)
         elif count_ok_array == "2\n" and count_ok_spare == "2\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 1, 1)
             update_r_status_config_file(JBOD2, 2, 2)
             update_r_status_config_file(JBOD3, 2, 2)
         elif count_ok_array == "1\n" and count_ok_spare == "1\n":
-            update_r_status_config_file(HEADER, 1, 1)
+            update_r_status_config_file(HEAD, 1, 1)
             update_r_status_config_file(JBOD1, 2, 2)
             update_r_status_config_file(JBOD2, 2, 2)
             update_r_status_config_file(JBOD3, 2, 2)
         else:
-            update_r_status_config_file(HEADER, 2, 2)
+            update_r_status_config_file(HEAD, 2, 2)
             update_r_status_config_file(JBOD1, 2, 2)
             update_r_status_config_file(JBOD2, 2, 2)
             update_r_status_config_file(JBOD3, 2, 2)
