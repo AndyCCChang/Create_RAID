@@ -32,7 +32,7 @@ A1100_PRODUCTNAME = "RS300-E8-RS4"
 A1970_PRODUCTNAME = "1970"
 EXE_PATH = "/promise/bin"
 RAID_CONFIG = "/etc/ezs3/raid_conf"
-SIMULATION_MODE = 0
+SIMULATION_MODE = 1
 HEAD = "Head"
 JBOD1 = "JBOD1"
 JBOD2 = "JBOD2"
@@ -53,13 +53,15 @@ def list_raids():
         create_raid_config_file()
     #init_raid_config_file(productname)
     size_raid_conf = get_size_raid_conf()
-    if size_raid_conf <4:
-        init_raid_config_file(productname)     
-    update_raid_config_file()
-    with open(RAID_CONFIG) as infp:
-        for line in infp:
-            DATA = eval(line)
+    DATA = get_config()
     return DATA
+    #if size_raid_conf <4:
+    #    init_raid_config_file(productname)     
+    #update_raid_config_file()
+    #with open(RAID_CONFIG) as infp:
+    #    for line in infp:
+    #        DATA = eval(line)
+    #return DATA
 #if file not existed
 def create_raid_config_file():
     do_cmd("echo \"[]\" > " + RAID_CONFIG)
@@ -67,7 +69,7 @@ def create_raid_config_file():
 def init_raid_config_file(productname):
     #logger.info("productname: %s", productname)
     if A1100_PRODUCTNAME in productname:
-        print ""
+        #print ""
         raids = []
         raid = []
         raidc = "15 + 1 RAID 5"
@@ -137,7 +139,7 @@ def create_raids(storage_box):
         count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
         if(storage_box == HEAD):
             if count_ok_array == "1\n":
-                print("RAID existed")
+                #print("RAID existed")
                 array_status = 0
             else:
                 do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
@@ -165,7 +167,7 @@ def create_raids(storage_box):
     elif A1970_PRODUCTNAME in productname:
         is_VD = do_cmd("{}/check_mcli_array.sh".format(EXE_PATH))
         if is_VD == "VD\nVD\nVD\n":
-            print("RAID existed")
+            #print("RAID existed")
             raid_status = 0
             spare_status = 0
         #elif phydrv_count_A1970 == 35:
@@ -173,7 +175,7 @@ def create_raids(storage_box):
             FNULL = open(os.devnull, 'w')
             retcode = subprocess.call(['./run_mcli.sh'], stdout=FNULL, stderr=subprocess.STDOUT)
             if retcode == 0:
-                print "Setting RAID done"
+                #print "Setting RAID done"
                 logger.info("Setting RAID done")
                 spare_status = 1
             else:
@@ -208,10 +210,21 @@ def add_raid_raw():
         if phdrv_count_A1100 ==16:
             print "16"       
 
+def get_config():
+    productname = get_productname() 
+    size_raid_conf = get_size_raid_conf()
+    if size_raid_conf <4:
+        init_raid_config_file(productname)
+    with open(RAID_CONFIG) as infp:
+        for line in infp:
+            DATA = eval(line)
+    return DATA
 
 def update_r_status_config_file(storage_box, array_status, spare_status):
+    #print("in update_r_status_config_file")
     #return
-    raids = list_raids()
+    #raids = list_raids()
+    raids = get_config()
     #return
     size_raid_conf = get_size_raid_conf()
     productname = get_productname()
@@ -263,7 +276,8 @@ def get_size_raid_conf():
 
 #TODO: set created if in array is existed
 def update_raid_config_file():
-    logger.info("update_raid_config_file")
+    logger.info("in update_raid_config_file")
+    #print("in update_raid_config_file")
     if SIMULATION_MODE:
         return 0
     else:
@@ -271,6 +285,7 @@ def update_raid_config_file():
         count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
         phdrv_count_A1100 = count_phydrv_A1100()
         logger.info("phdrv_count_A1100: %s", phdrv_count_A1100)
+        #print("phdrv_count_A1100: %s", phdrv_count_A1100)
     if phdrv_count_A1100 ==16:
         if count_ok_array == "1\n" and count_ok_spare == "1\n":
             array_status = 1
@@ -283,7 +298,7 @@ def update_raid_config_file():
 
             #print("RAID not existed")
             #do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-            array_status = 1
+            #array_status = 1
     elif phdrv_count_A1100 ==32:
         if count_ok_array == "2\n" and count_ok_spare == "2\n":
             update_r_status_config_file(HEAD, 1, 1)
@@ -344,8 +359,8 @@ def create_raid2():
     raids = list_raids()
     for n, i in enumerate(raids):
         for j, k in i.iteritems():
-            print "j: " + j
-            print "k: " + k
+            #print "j: " + j
+            #print "k: " + k
             if k == "Not Created":
                 i[j] = "Created"
     file_ = open('/etc/ezs3/raid_conf', 'w')

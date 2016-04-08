@@ -347,6 +347,9 @@ function init_create_raid_table(){
 	   }
         ],
         "fnDrawCallback": function(oSettings) { //useless?
+             update_confirm_button_status();
+             $(".raid-check-erase").click(update_confirm_button_status);
+             $(".raid-check-create").click(update_confirm_button_status);
            //update_raid_button_status();
            //$(".raid-check-create").click(update_raid_button_status()); 
            //$(".raid-check-erase").click(update_raid_button_status()); 
@@ -808,17 +811,6 @@ this.init = function(initCompleted) {
     init_iscsi_session_table();
     //Andy
     init_create_raid_table();
-    //console.log("before");
-    //function(response){
-    //host_storage_raid_refresh_page(initCompleted); // Can't be used? missing parameter host?
-        //if (completed) {
-        //    completed();
-        //}
-
-    //}
-    //host_storage_raid_refresh_page(initCompleted); // Can't be used? missing parameter host?
-    //console.log("after");
-
     host_storage_refresh_page(initCompleted, true);
     //$("#raid-create-confirm").click(dialog_raid_confirm);
 
@@ -863,10 +855,15 @@ function host_storage_raid_refresh_page(initCompleted){
     });
 }
 
-//Andy
-//function update_raid_dialog(){
-    
-//}
+function update_confirm_button_status(){
+    //$("#raid-create-confirm").prop("disabled", true);
+    iterateSelectedBothItems("#create-raid-table", function(last, raid, row) {
+        $(".raid-check-erase").prop("disabled", true);
+        console.log("both checked");
+        //$("#raid-create-confirm").prop("disabled", true);
+    })
+}
+
 
 
 };
