@@ -267,11 +267,17 @@ function dialog_raid_confirm(){
     console.log("click raid confirm");
     var raid_desc_list = [];
     console.log(selectedItemsLength("#create-raid-table"));
-    iterateSelectedItems("#create-raid-table", function(last, raid, raw) {
+    iterateSelectedThirdItems("#create-raid-table", function(last, raid, raw) {
         console.log("in iterateSelectedItems");
-        raid_list.push(raid.r_description);
+        raid_list.push(raid.r_description);//can be deleted?
         ajax_create_raid(hostIP, raid_list);
     });
+    iterateSelectedForthItems("#create-raid-table", function(last, raid, raw) {
+        raid_list.push(raid.r_description);//can be deleted?
+        ajax_erase_raid(hostIP, raid_list);
+    });
+    
+    // not call?
     if ($("#create_raid").prop("checked")) {
         ajax_create_raid(hostIP);
     }
@@ -772,13 +778,8 @@ this.init = function(initCompleted) {
 //    });
     //$("#raid-create-confirm").click(dialog_raid_confirm);
     $("#raid-create-confirm").click(function(){
-        //var storage_box = $("#create-raid-table").data("storage_box");
         var storage_box;
-        //create_raid_confirm(r_desc, "#create-raid-table");//
-        console.log("click raid confirm");
-        //console.log("storage_box: " + storage_box);
         var storage_box_list = [];
-        //console.log(selectedItemsLength("#create-raid-table")); //Need to add td:nthxxxx in common.js
         iterateSelectedItems("#create-raid-table", function(last, raid, row) {
             console.log("in iterateSelectedItems");
             console.log("raid.storage_box: " + raid.storage_box);
@@ -787,23 +788,33 @@ this.init = function(initCompleted) {
             storage_box_list.push(raid.storage_box);
             //ajax_pool_add_node("1", "1");
             ajax_create_raid(hostIP, storage_box_list, function(response){
-            //ajax_create_raid(hostIP, function(response){
-            //ajax_create_raid(hostIP, raid.storage_box, function(response){
                 var raidTable = $("#create-raid-table").dataTable();
-                //for (var i = 0; i < storage_box_list.length; i++) {
-                //    raidTable.fnAddData(storage_box_list[i]);
-                //}
                 console.log("before modal hide");
                 host_storage_refresh_page();
-                //$("#create-raid-table").modal('hide');
                 $("#dialog-create-raid").modal('hide');
                 console.log("after modal hide");
-
             });
         });
     });
 
-
+    $("#raid-erase-confirm").click(function(){
+        var storage_box;
+        var storage_box_list = [];
+        iterateSelectedItems("#create-raid-table", function(last, raid, row) {
+            console.log("in iterateSelectedItems");
+            console.log("raid.storage_box: " + raid.storage_box);
+            storage_box = raid.storage_box;
+            console.log("storage_box: " + storage_box);
+            storage_box_list.push(raid.storage_box);
+            ajax_erase_raid(hostIP, storage_box_list, function(response){
+                var raidTable = $("#create-raid-table").dataTable();
+                console.log("before modal hide");
+                host_storage_refresh_page();
+                $("#dialog-create-raid").modal('hide');
+                console.log("after modal hide");
+            });
+         });   
+    });
 
     init_local_disk_table();
     init_iscsi_disk_table();
@@ -829,7 +840,7 @@ this.uninit = function() {
     $("#content").remove();
 }
 
-//Andy
+//Andy not call
 function host_storage_raid_refresh_page(initCompleted){
     console.log("inside host_storage_raid_refresh_page");
     $.when(ajax_host_create_raid_list(hostIP)).done(function(a){
@@ -857,11 +868,21 @@ function host_storage_raid_refresh_page(initCompleted){
 
 function update_confirm_button_status(){
     //$("#raid-create-confirm").prop("disabled", true);
-    iterateSelectedBothItems("#create-raid-table", function(last, raid, row) {
-        $(".raid-check-erase").prop("disabled", true);
-        console.log("both checked");
-        //$("#raid-create-confirm").prop("disabled", true);
-    })
+    $("#raid-create-confirm").prop("disabled", true);
+    $("#raid-erase-confirm").prop("disabled", true);
+    if (selectedForthItemsLength("#create-raid-table") > 0){
+        console.log("4rd checked");
+        $("#raid-erase-confirm").prop("disabled", false);
+    }
+    if (selectedThirdItemsLength("#create-raid-table") > 0){
+        console.log("3rd checked");
+        $("#raid-create-confirm").prop("disabled", false);
+    }
+    //selectedThirdItemsLength("#create-raid-table", function(last, raid, row) {
+        //$(".raid-check-erase").prop("disabled", true);
+    //    console.log("3rd checked");
+    //    $("#raid-create-confirm").prop("disabled", true);
+    //})
 }
 
 

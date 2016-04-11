@@ -185,8 +185,51 @@ def create_raids(storage_box):
                 spare_status = -1
             update_raid_config_file()
             return array_status, spare_status
-def erase_raid(productname, storage_box):
-    print "erase_raid"
+def erase_raids(storage_box):
+    logger.info("in_erase_raids")  
+    if not SIMULATION_MODE:
+        productname = get_productname()
+    array_status = 0 #-1: failed, 0: existed, 1: success
+    spare_status = 0 #-1: failed, 0: existed, 1: success
+
+    if SIMULATION_MODE:
+        array_status = 0
+        spare_status = 0 #2: r_status: Not Created
+        #spare_status = 1
+        update_r_status_config_file(storage_box, array_status, spare_status)
+        return
+#!!!!!NEED TO BE CHANGED TO ERASE COMMAND!!!!!!!!!!!!!!!!!!!!!!!
+    if A1100_PRODUCTNAME in productname:
+        phdrv_count_A1100 = count_phydrv_A1100()
+        count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
+        count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
+        if(storage_box == HEAD):
+            if count_ok_array == "1\n":
+                #print("RAID existed")
+                array_status = 0
+            else:
+                do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
+                array_status = 1
+                do_cmd("cliib -u admin -p password -C spare -a add -p 16 -t g -r y")
+                spare_status = 1
+        elif(storage_box == JBOD1):#need to check if JBOD1 is created or not
+                do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l\\\"raid=5\\\"")
+                array_status = 1
+                do_cmd("cliib -u admin -p password -C spare -a add -p 32 -t g -r y")
+                spare_status = 1
+        elif(storage_box == JBOD2):#need to check if JBOD2 is created or not
+                do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
+                array_status = 1
+                do_cmd("cliib -u admin -p password -C spare -a add -p 48 -t g -r y")
+                spare_status = 1
+        elif(storage_box == JBOD3):#need to check if JBOD2 is created or not
+                do_cmd("cliib -u admin -p password -C array -a add -p49~63 -l\\\"raid=5\\\"")
+                array_status = 1
+                do_cmd("cliib -u admin -p password -C spare -a add -p 64 -t g -r y")
+                spare_status = 1
+        update_raid_config_file()
+        return array_status, spare_status
+#!!!!!NEED TO BE CHANGED TO ERASE COMMAND!!!!!!!!!!!!!!!!!!!!!!!
 
 def count_phydrv_A1100():
     phydrv = do_cmd("cliib -u admin -p password -C phydrv")

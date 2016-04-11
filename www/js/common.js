@@ -207,6 +207,48 @@ function clearSelectedItems(tableSelector) {
     });
 }
 
+function iterateSelectedBothItems(tableSelector, callback) {
+    var count = 0;
+    var total = selectedItemsLength(tableSelector);
+    iterate_both_items(tableSelector, function(last, checked, item, row) {
+        if (checked) {
+            if (callback) {
+                callback(++count==total, item, row);
+            }
+        }
+    });
+}
+//andy
+function iterate_both_items(tableSelector, callback){
+    var total = items_length(tableSelector);
+    var table = $(tableSelector).dataTable();
+    var count = 0;
+    table.$("tr").each(function() {
+        var row = this;
+        var item = table.fnGetData(this);
+        if ($(this).find("td:nth-child(3) input").prop("checked") || $(this).find("td:nth-child(4) input").prop("checked") ) {
+        //    $(this).find("td:nth-child(4) input").prop("disabled", true);
+        //if ($(this).find("td:nth-child(3) input").prop("checked")) {
+            if (callback) {
+                if (++count == total) {
+                    callback(true, true, item, row);
+                } else {
+                    callback(false, true, item, row);
+                }
+            }
+        }
+        else {
+            if (callback) {
+                if (++count == total) {
+                    callback(true, false, item, row);
+                } else {
+                    callback(false, false, item, row);
+                }
+            }
+        }
+    });
+}
+
 function iterate_items(tableSelector, callback) {
     var total = items_length(tableSelector);
     var table = $(tableSelector).dataTable();
@@ -249,6 +291,48 @@ function iterateUnselectedItems(tableSelector, callback) {
 }
 var iterate_unselected_items = iterateUnselectedItems; // for naming convension
 
+//Andy
+//function iterateSelectedItemsRAID(tableSelector, operation, callback) {
+//    var count = 0;
+//    var total = selectedItemsLength(tableSelector);
+//    if (operation == "CREATE"){
+//        iterate_items(tableSelector, function(last, checked, item, row) {
+//            if (checked) {
+//                if (callback) {
+//                    callback(++count==total, item, row);
+//                }
+//            }
+//       });
+//    }
+//    else if (operation == "ERASE"){
+    
+//    }
+//}
+
+//Andy iterate Selected Forth Items
+function iterateSelectedForthItems(tableSelector, callback) {
+    var count = 0;
+    var total = selectedForthItemsLength(tableSelector);
+    iterate_items(tableSelector, function(last, checked, item, row) {
+        if (checked) {
+            if (callback) {
+                callback(++count==total, item, row);
+            }
+        }
+    });
+}
+//Andy iterate Selected Third Items
+function iterateSelectedThirdItems(tableSelector, callback) {
+    var count = 0;
+    var total = selectedThirdItemsLength(tableSelector);
+    iterate_items(tableSelector, function(last, checked, item, row) {
+        if (checked) {
+            if (callback) {
+                callback(++count==total, item, row);
+            }
+        }
+    });
+}
 function iterateSelectedItems(tableSelector, callback) {
     var count = 0;
     var total = selectedItemsLength(tableSelector);
@@ -265,6 +349,28 @@ var iterate_selected_items = iterateSelectedItems;  // for naming convension
 function items_length(tableSelector) {
     var table = $(tableSelector).dataTable();
     return table.$("tr").length;
+}
+//Andy selected 4th column
+function selectedForthItemsLength(tableSelector) {
+    var count = 0;
+    var table = $(tableSelector).dataTable();
+    table.$("tr").each(function() {
+        if ($(this).find("td:nth-child(4) input").prop("checked")) {
+            count++;
+        }
+    });
+    return count;
+}
+//Andy selected 3rd column
+function selectedThirdItemsLength(tableSelector) {
+    var count = 0;
+    var table = $(tableSelector).dataTable();
+    table.$("tr").each(function() {
+        if ($(this).find("td:nth-child(3) input").prop("checked")) {
+            count++;
+        }
+    });
+    return count;
 }
 
 function selectedItemsLength(tableSelector) {
