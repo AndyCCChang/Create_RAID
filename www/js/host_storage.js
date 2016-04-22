@@ -83,35 +83,18 @@ function refresh_nas_disk_panel(recurrence, is_global) {
 function update_raid_button_status() {
     var createRAIDTable = $("#create-raid-table").dataTable();
     var checked = false;
-    //console.log(createRAIDTable);
-    //console.log("call update_raid_button_status()");
     
     ajax_host_create_raid_list(hostIP, function(response) {
         var r_status = response[0].r_status;
-        //console.log("response = " + response[0]);
-        //console.log("r_status = " + r_status);
         if (r_status == "Created"){
             console.log("r_status == OK");
-            //$("#raid-create-confirm").prop("disabled", true);
-            //$("#create_raid").prop("checked", false);
         }
     });
-
-    //iterateSelectedItems("#create-raid-table", function(last, raid) {
-    //    checked = true;
-    //    console.log("raid.r_status");
-    //    console.log(raid.r_status);
-    //    if (raid.r_status == 'OK' && r_description == 'Header' ) {
-    //        console.log("create-raid-table");
-    //        $("#raid-create-confirm").prop("disabled", true);
-        
-    //    }
-    //});
 }
 
 
 function host_storage_refresh_page(initCompleted, recurrence) {
-    //Andy
+    //6.1 Create raid table
     var createRAIDTable = $("#create-raid-table").dataTable();
     var localDiskTable = $("#local-disk-table").dataTable();
     var iscsiDiskTable = $("#iscsi-disk-table").dataTable();
@@ -140,7 +123,7 @@ function host_storage_refresh_page(initCompleted, recurrence) {
                           ajax_disk_status_image(hostIP, null, is_global));
         } else {
             return $.when(ajax_host_local_disk_list(hostIP, null, is_global),
-                          ajax_disk_status_image(hostIP, null, is_global),//, changed to ;
+                          ajax_disk_status_image(hostIP, null, is_global),
                           ajax_host_create_raid_list(hostIP, null, is_global));
         }
     }).done(function(a, b, c, d){
@@ -258,47 +241,10 @@ function init_disk_images_table(rows, cols, slots) {
         }
     }
 }
-//Andy called?
-function dialog_raid_confirm(){
-    var create_raid = false;
-    var erase_raid = false;
-    var raid_desc = $("#create-raid-table").data("r_description");
-    //create_raid_confirm(r_desc, "#create-raid-table");//
-    console.log("click raid confirm");
-    var raid_desc_list = [];
-    console.log(selectedItemsLength("#create-raid-table"));
-    iterateSelectedThirdItems("#create-raid-table", function(last, raid, raw) {
-        console.log("in iterateSelectedItems");
-        raid_list.push(raid.r_description);//can be deleted?
-        ajax_create_raid(hostIP, raid_list);
-    });
-    iterateSelectedForthItems("#create-raid-table", function(last, raid, raw) {
-        raid_list.push(raid.r_description);//can be deleted?
-        ajax_erase_raid(hostIP, raid_list);
-    });
-    
-    // not call?
-    if ($("#create_raid").prop("checked")) {
-        ajax_create_raid(hostIP);
-    }
-    else {
-        console.log("create raid not checked");
-    }
-}
-//Andy
+//v6.1 init_create_raid_table
 function init_create_raid_table(){
     $("#create-raid-table").dataTable({
 	"aoColumns": [
-           //{
-           //     "bSortable": false,
-           //     "sTitle": getText("Create"),
-           //     "sClass": "raid-check-create2 center",
-           //     "sWidth": "5%",
-           //     "mData": null,
-           //     "mRender": function(data, type, full) {
-           //         return '<input type="checkbox"></input>';
-           //      }
-           //},
            {
                "sTitle": getText("Storage Box"),
                "sClass": "storage-box",
@@ -352,23 +298,12 @@ function init_create_raid_table(){
                "mData": "r_description"
 	   }
         ],
-        "fnDrawCallback": function(oSettings) { //useless?
+        "fnDrawCallback": function(oSettings) {
              update_confirm_button_status();
              $(".raid-check-erase").click(update_confirm_button_status);
              $(".raid-check-create").click(update_confirm_button_status);
-           //update_raid_button_status();
-           //$(".raid-check-create").click(update_raid_button_status()); 
-           //$(".raid-check-erase").click(update_raid_button_status()); 
         },
         "aaSorting": [[ 1, "asc" ]],
-        //"fnHeaderCallback": function(nHead, aData, iStart, iEnd, aiDisplay) {
-        //    nHead.getElementsByTagName('th')[0].innerHTML = '<input type="checkbox" class="raid-check-create-all"></input>';
-        //    $('#create-raid-table' + " .raid-check-create-all").click(function() {
-        //        $('#create-raid-table' + " .raid-check-create input").each(function() {
-        //            $(this).prop("checked", $('#create-raid-table' + " .raid-check-create-all").prop("checked"));
-        //        });
-        //    })
-        //},
         "oLanguage" : {
             "oPaginate": {
                 "sFirst": getText("PAGE_FIRST"),
@@ -386,7 +321,7 @@ function init_create_raid_table(){
         }
     });
 }
-//Andy end
+
 function init_local_disk_table() {
     $("#local-disk-table").dataTable({
         "aoColumns": [
@@ -772,11 +707,6 @@ this.init = function(initCompleted) {
             $("#dialog-iscsi-login").modal('hide');
         });
     });
-//    $("#raid-create-confirm").click(function() {
-//       console.log("click raid confirm");
-    
-//    });
-    //$("#raid-create-confirm").click(dialog_raid_confirm);
     $("#raid-create-confirm").click(function(){
         var storage_box;
         var storage_box_list = [];
@@ -786,7 +716,6 @@ this.init = function(initCompleted) {
             storage_box = raid.storage_box;
             console.log("storage_box: " + storage_box);
             storage_box_list.push(raid.storage_box);
-            //ajax_pool_add_node("1", "1");
             ajax_create_raid(hostIP, storage_box_list, function(response){
                 var raidTable = $("#create-raid-table").dataTable();
                 console.log("before modal hide");
@@ -820,12 +749,9 @@ this.init = function(initCompleted) {
     init_iscsi_disk_table();
     init_nas_disk_table();
     init_iscsi_session_table();
-    //Andy
+    //v6.1 init_create_raid_table();
     init_create_raid_table();
     host_storage_refresh_page(initCompleted, true);
-    //$("#raid-create-confirm").click(dialog_raid_confirm);
-
-    //update_raid_button_status();
 }
 
 this.uninit = function() {
@@ -839,50 +765,16 @@ this.uninit = function() {
     $("#iscsi-session-table").dataTable().fnDestroy();
     $("#content").remove();
 }
-
-//Andy not call
-function host_storage_raid_refresh_page(initCompleted){
-    console.log("inside host_storage_raid_refresh_page");
-    $.when(ajax_host_create_raid_list(hostIP)).done(function(a){
-        var raids = [];
-        //console.log(a[0].response.raidconfig.length);
-        for(var i = 0; i< a[0].response.raidconfig.length; i++){
-            var raid = {
-                raidconfig: a[0].response.raidconfig[i].raidconfig,
-                r_description: a[0].response.r_description[i].r_description,
-                r_status: a[0].response.r_status[i].r_status   
-            };
-            raids.push(raid);
-        }
-        var raidTable = $("#create-raid-table").dataTable();
-        raidTable.fnClearTable();
-        if(raids.length){
-            raidTable.fnAddData(raids);
-        }
-        if (initCompleted) {
-            $("#content").show();
-            initCompleted();
-        }
-    });
-}
-
+//v6.1 update_confirm_button_status
 function update_confirm_button_status(){
-    //$("#raid-create-confirm").prop("disabled", true);
     $("#raid-create-confirm").prop("disabled", true);
     $("#raid-erase-confirm").prop("disabled", true);
     if (selectedForthItemsLength("#create-raid-table") > 0){
-        console.log("4rd checked");
         $("#raid-erase-confirm").prop("disabled", false);
     }
     if (selectedThirdItemsLength("#create-raid-table") > 0){
-        console.log("3rd checked");
         $("#raid-create-confirm").prop("disabled", false);
     }
-    //selectedThirdItemsLength("#create-raid-table", function(last, raid, row) {
-        //$(".raid-check-erase").prop("disabled", true);
-    //    console.log("3rd checked");
-    //    $("#raid-create-confirm").prop("disabled", true);
-    //})
 }
 
 

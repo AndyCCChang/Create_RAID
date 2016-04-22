@@ -18,6 +18,5 @@ class Handler:
         form = web.input()
         storage_box = form.get('storage_box[]', '')
         erase_raids(storage_box)
-        logger.info("andy_storage_box: %s", storage_box)
         return errors.SUCCESS
 
