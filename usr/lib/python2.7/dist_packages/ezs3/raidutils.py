@@ -10,7 +10,6 @@ import datetime
 import time
 import math
 import logging
-from ezs3.command import do_cmd, DoCommandError, do_cmd_with_progress
 from ezs3.command import *
 from ezs3.log import EZLog
 from ezs3 import remote
@@ -25,7 +24,7 @@ from ezmonitor.cluster_metric_manager import ClusterMetricManager
 import subprocess
 import commands
 from raidutils_extend import *
-VERSION = "V3.3"
+VERSION = "V4.0"
 logger = EZLog.get_logger(__name__)
 cl = get_central_logger()
 ALIGNMENT_SECTORS = 2048
@@ -48,14 +47,8 @@ JBOD3 = "JBOD3"
 
 @remote.callable
 def list_raids():
-    phydrv = do_cmd_cliib("cliw -u admin -p password -C phydrv")
-    logger.info("phydrv: %s", phydrv)
-    productname = get_productname()
+    #update_raid_config_file()  
     if not os.path.isfile(RAID_CONFIG):
-        if SIMULATION_MODE:
-            productname = "RS300-E8-RS4"
-        else:
-            productname = get_productname()
         create_raid_config_file()
     size_raid_conf = get_size_raid_conf()
     DATA = get_config()
@@ -108,21 +101,10 @@ def init_raid_config_file(productname):
     file_.write("{}".format(raids))
     file_.close()
     update_raid_config_file()
-# Not called
-def exe_create_command():
-    count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
-    logger.info("exe count_ok_array: %s", count_ok_array)
-    a = do_cmd("cliib -u admin -p password -C array -a add -p1~15 -l\\\"raid=5\\\"")
-    logger.info("exe a: %s", a)
 @remote.callable
 def create_raids(storage_box):
-    logger.info("andy in create_raids2")
-    phydrv = do_cmd_cliib("cliw -u admin -p password -C phydrv")
-    date = do_cmd_cliib("date")
-    logger.info("date: %s", date)
-    logger.info("phydrv: %s", phydrv)
     count_ok_array = do_cmd("{}/check_count_ok_array.sh".format(EXE_PATH))
-    logger.info("count_ok_array: %s", count_ok_array)
+    #logger.info("count_ok_array: %s", count_ok_array)
     if not SIMULATION_MODE:
         productname = get_productname()
     array_status = 0 #-1: failed, 0: existed, 1: success
@@ -135,9 +117,11 @@ def create_raids(storage_box):
         return
     if A1100_PRODUCTNAME in productname:
         phdrv_count_A1100 = count_phydrv_A1100()
-        count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
-        count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
+        count_ok_array = do_cmd_cliib("cliib -D -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
+        count_ok_spare = do_cmd_cliib("cliib -D -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
+        logger.info("andy in A1100_PRODUCTNAME in productname")
         logger.info("count_ok_array: %s", count_ok_array)
+        #return
         if(storage_box == HEAD):
             logger.info("andy in Head")
             if count_ok_array == "1\n" and count_ok_spare == "1\n":
@@ -145,26 +129,26 @@ def create_raids(storage_box):
                 spare_status = 1
             else: 
                 #exe_create_command()
-                logger.info("Running cliw create raid")
-                do_cmd_cliib("cliw -u admin -p password -C array -a add -p1~15 -l \\\"raid=5\\\"")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a add -p1~15 -l \\\"raid=5\\\"")
+                #do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -D -p password -C array -a add -p1~15 -l \\\"raid=5\\\"")
                 array_status = 1
-                do_cmd_cliib("cliw -u admin -p password -C spare -a add -p 16 -t g -r y")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a add -p 16 -t g -r y")
+                #do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -D -p password -C spare -a add -p 16 -t g -r y")
                 spare_status = 1
-                logger.info("Finish running cliiw create raid")
         elif(storage_box == JBOD1):#need to check if JBOD1 is created or not
-                do_cmd("cliib -u admin -p password -C array -a add -p17~31 -l \\\"raid=5\\\"")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a add -p17~31 -l \\\"raid=5\\\"")
                 array_status = 1
-                do_cmd("cliib -u admin -p password -C spare -a add -p 32 -t g -r y")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a add -p 32 -t g -r y")
                 spare_status = 1
         elif(storage_box == JBOD2):#need to check if JBOD2 is created or not
-                do_cmd("cliib -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a add -p33~47 -l\\\"raid=5\\\"")
                 array_status = 1
-                do_cmd("cliib -u admin -p password -C spare -a add -p 48 -t g -r y")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a add -p 48 -t g -r y")
                 spare_status = 1
         elif(storage_box == JBOD3):#need to check if JBOD2 is created or not
-                do_cmd("cliib -u admin -p password -C array -a add -p49~63 -l\\\"raid=5\\\"")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a add -p49~63 -l\\\"raid=5\\\"")
                 array_status = 1
-                do_cmd("cliib -u admin -p password -C spare -a add -p 64 -t g -r y")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a add -p 64 -t g -r y")
                 spare_status = 1
         update_raid_config_file()
         #return array_status, spare_status
@@ -202,38 +186,41 @@ def erase_raids(storage_box):
         return
     if A1100_PRODUCTNAME in productname:
         phdrv_count_A1100 = count_phydrv_A1100()
-        count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
-        count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
+        count_ok_array = do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
+        count_ok_spare = do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
         if(storage_box == HEAD):
             if count_ok_array == "0\n" and count_ok_spare == "0\n":
                 array_status = 0
                 spare_status = 0
             else:
-                do_cmd("cliib -u admin -p password -C array -a del -d 0")
+                #do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -p password -C array -a del -d 0")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a del -d 0")
                 array_status = 1
-                do_cmd("cliib -u admin -p password -C spare -a del -i 0")
+                #do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -p password -C spare -a del -i 0")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a del -i 0")
                 spare_status = 1
         elif(storage_box == JBOD1):#need to check if JBOD1 is created or not
-                do_cmd("cliib -u admin -p password -C array -a del -d 1")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a del -d 1")
                 array_status = 1
-                do_cmd("cliib -u admin -p password -C spare -a del -i 1")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a del -i 1")
                 spare_status = 1
         elif(storage_box == JBOD2):#need to check if JBOD2 is created or not
-                do_cmd("cliib -u admin -p password -C array -a del -d 2")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a del -d 2")
                 array_status = 1
-                do_cmd("cliib -u admin -p password -C spare -a del -i 2")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a del -i 2")
                 spare_status = 1
         elif(storage_box == JBOD3):#need to check if JBOD2 is created or not
-                do_cmd("cliib -u admin -p password -C array -a del -d 3")
+                do_cmd_cliib("cliib -D -u admin -p password -C array -a del -d 3")
                 array_status = 1
-                do_cmd("cliib -u admin -p password -C spare -a del -i 3")
+                do_cmd_cliib("cliib -D -u admin -p password -C spare -a del -i 3")
                 spare_status = 1
         update_raid_config_file()
         return array_status, spare_status
 
 def count_phydrv_A1100():
-    #phydrv = do_cmd("{}/check_phydrv.sh".format(EXE_PATH))
-    phydrv = do_cmd_cliib("cliw -u admin -p password -C phydrv")
+    #phydrv = do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u administrator -p password -C phydrv")
+    phydrv = do_cmd_cliib("cliib -D -u administrator -p password -C phydrv")
+    #phydrv = do_cmd_cliib("cliib -D -u administrator -p password -C phydrv")
     #do_cmd_cliib("cliw -u admin -p password -C phydrv > /tmp/cnt_drv")
     file_ = open('/tmp/cnt_drv', 'w')
     file_.write("{}".format(phydrv))
@@ -244,7 +231,6 @@ def count_phydrv_A1100():
            if line.strip():
               line_count += 1
     line_count = line_count-3
-    logger.info("count_phydrv_A1100: %d", line_count)
     return line_count
 
 def add_raid_raw():
@@ -304,17 +290,18 @@ def get_size_raid_conf():
 
 #TODO: set created if in array is existed
 def update_raid_config_file():
-    logger.info("in update_raid_config_file")
-    #print("in update_raid_config_file")
     if SIMULATION_MODE:
         return 0
     else:
-        count_ok_array = do_cmd("cliib -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
-        count_ok_spare = do_cmd("cliib -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
+        #count_ok_array = do_cmd_cliib("cliib -D -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
+        count_ok_array = do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -p password -C array -a list |grep -E *'OK' |wc -l")
+        #count_ok_spare = do_cmd_cliib("cliib -D -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
+        count_ok_spare = do_cmd_cliib("SW_CONF_PATH=/promise/bin /promise/bin/cliib -D -u admin -p password -C spare -a list |grep -E *'OK' |wc -l")
         phdrv_count_A1100 = count_phydrv_A1100()
         logger.info("phdrv_count_A1100: %s", phdrv_count_A1100)
     if phdrv_count_A1100 ==16:
         if count_ok_array == "1\n" and count_ok_spare == "1\n":
+            logger.info("in best")
             array_status = 1
             spare_status = 1
             update_r_status_config_file(HEAD, array_status, spare_status)

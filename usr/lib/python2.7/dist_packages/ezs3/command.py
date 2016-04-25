@@ -29,8 +29,7 @@ def do_cmd_cliib(cmd, timeout=0, force=False):
     logger.debug(u"command '{}' (timeout={}, force={})"
                  .format(cmd, timeout, force))
     d = dict(os.environ)
-    #d = {}
-    d['PATH'] = '/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:/promise/bin'
+    d['PATH'] = '/promise/bin:/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin'
     d['LD_LIBRARY_PATH'] = '/promise/lib'
     d['SW_CONF_PATH'] = '/promise/bin'
     logger.info("d: %s", d)

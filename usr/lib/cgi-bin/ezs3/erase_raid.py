@@ -7,8 +7,6 @@ from ezs3.log import EZLog
 from ezs3.node_management import prepare_enable_osd, enable_osd
 from ezs3.remote import TASK_TICKET, ASYNC_MODE
 import errors
-from ezs3.raidutils import list_raids
-from ezs3.raidutils import create_raids
 from ezs3.raidutils import *
 
 logger = EZLog.get_logger(__name__)

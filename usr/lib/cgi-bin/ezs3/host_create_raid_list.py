@@ -10,7 +10,6 @@ logger = EZLog.get_logger(__name__)
 
 class Handler:
     def GET(self):
-        logger.info("in host_create_raid_list")
         form = web.input()
         raids = list_raids(_host=form.host)
         return errors.SUCCESS, raids
