@@ -80,17 +80,6 @@ function refresh_nas_disk_panel(recurrence, is_global) {
     }, !recurrence && is_global);
 }
 
-function update_raid_button_status() {
-    var createRAIDTable = $("#create-raid-table").dataTable();
-    var checked = false;
-    
-    ajax_host_create_raid_list(hostIP, function(response) {
-        var r_status = response[0].r_status;
-        if (r_status == "Created"){
-            console.log("r_status == OK");
-        }
-    });
-}
 
 
 function host_storage_refresh_page(initCompleted, recurrence) {
@@ -749,7 +738,7 @@ this.init = function(initCompleted) {
     init_iscsi_disk_table();
     init_nas_disk_table();
     init_iscsi_session_table();
-    //v6.1 init_create_raid_table();
+    //v6.1 init_create_raid_table
     init_create_raid_table();
     host_storage_refresh_page(initCompleted, true);
 }
